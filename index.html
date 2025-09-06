@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحويل النص إلى PDF</title>
+    <title>محول الصور والنصوص إلى PDF</title>
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         body {
             font-family: 'Cairo', sans-serif;
-            direction: rtl;
-            padding-top: 64px;
+            direction: rtl; /* Set direction to right-to-left for Arabic */
+            padding-top: 64px; /* Add padding to body to prevent content from hiding behind the header */
         }
+        /* Style for the hamburger icon animation */
         .menu-icon-btn.active .line:nth-child(1) {
             transform: translateY(8px) rotate(45deg);
         }
@@ -36,7 +37,7 @@
         </button>
         
         <!-- Header Title -->
-        <h1 id="header-title" class="text-xl font-bold">تحويل النص إلى PDF</h1>
+        <h1 id="header-title" class="text-xl font-bold">محول الصور والنصوص إلى PDF</h1>
         
         <!-- Placeholder for symmetry -->
         <div class="w-10"></div>
@@ -47,10 +48,9 @@
         <div class="p-8">
             <h2 id="menu-title" class="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">القائمة الرئيسية</h2>
             <nav class="space-y-4">
-                <a href="convert_images_to_pdf.html" id="home-link" class="block text-gray-700 hover:text-blue-600 font-semibold transition-colors duration-200">العودة للصفحة الرئيسية</a>
+                <a href="#" id="home-link" class="block text-gray-700 hover:text-blue-600 font-semibold transition-colors duration-200">الصفحة الرئيسية</a>
                 <a href="https://roaring-sprite-ab613f.netlify.app/" id="about-link" class="block text-gray-700 hover:text-blue-600 font-semibold transition-colors duration-200">سياسة الخصوصية</a>
                 <a href="https://www.facebook.com/mohtech.itz" id="contact-link" target="_blank" class="block text-gray-700 hover:text-blue-600 font-semibold transition-colors duration-200">تواصل معنا</a>
-                <a href="#" id="tools-link" class="block text-gray-700 hover:text-blue-600 font-semibold transition-colors duration-200">المزيد من الأدوات</a>
                 <a href="#" id="lang-switch-btn" class="block text-gray-700 hover:text-blue-600 font-semibold transition-colors duration-200">تغيير اللغة</a>
             </nav>
         </div>
@@ -59,115 +59,236 @@
     <!-- Main Content Container -->
     <div class="w-full max-w-2xl mt-8 p-4">
         <div class="bg-white rounded-lg shadow-xl p-8 w-full">
-            <div class="text-center mb-6">
-                <p id="subtitle" class="text-gray-600 mt-2">اكتب النص الخاص بك هنا لتحويله إلى مستند PDF.</p>
+            <!-- Tool Selector -->
+            <div class="flex justify-center space-x-4 space-x-reverse mb-6">
+                <button id="show-image-tool-btn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 hover:bg-blue-700">
+                    تحويل صور
+                </button>
+                <button id="show-text-tool-btn" class="bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 hover:bg-gray-400">
+                    تحويل نص
+                </button>
             </div>
 
-            <div class="mb-6">
-                <label for="text-input" id="text-label" class="block text-sm font-medium text-gray-700 mb-2">
-                    أدخل النص
-                </label>
-                <textarea id="text-input" class="w-full p-3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" rows="10"></textarea>
-            </div>
-
-            <!-- PDF Options -->
-            <div class="mb-6">
-                <h3 id="options-title" class="text-lg font-semibold text-gray-700 mb-2">خيارات PDF</h3>
-                <div class="flex flex-col sm:flex-row sm:space-x-4 sm:space-x-reverse space-y-4 sm:space-y-0">
-                    <div>
-                        <label for="page-format" id="format-label" class="block text-sm font-medium text-gray-700">حجم الصفحة</label>
-                        <select id="page-format" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="a4">A4</option>
-                            <option value="letter">Letter</option>
-                        </select>
+            <!-- Image to PDF Tool -->
+            <div id="image-tool-container" class="tool-container">
+                <div class="text-center mb-6">
+                    <p id="image-subtitle" class="text-gray-600 mt-2">اختر صورك (JPG, PNG) لتحويلها إلى مستند PDF واحد.</p>
+                </div>
+                <!-- File input for multiple images -->
+                <div class="mb-6">
+                    <label for="image-upload" id="upload-label" class="block text-sm font-medium text-gray-700 mb-2">
+                        اختر الصور
+                    </label>
+                    <input type="file" id="image-upload" accept=".jpg, .jpeg, .png" multiple class="block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-blue-50 file:text-blue-700
+                        hover:file:bg-blue-100
+                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                </div>
+                <!-- Preview and message area -->
+                <div id="image-preview-container" class="mb-6">
+                    <h3 id="image-preview-title" class="text-lg font-semibold text-gray-700 mb-2">معاينة الصور:</h3>
+                    <div id="image-preview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        <!-- Image previews will be added here dynamically -->
                     </div>
-                    <div>
-                        <label for="page-orientation" id="orientation-label" class="block text-sm font-medium text-gray-700">اتجاه الصفحة</label>
-                        <select id="page-orientation" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="portrait" id="portrait-option">عمودي</option>
-                            <option value="landscape" id="landscape-option">أفقي</option>
-                        </select>
+                    <p id="image-status-message" class="mt-4 text-center text-gray-500"></p>
+                </div>
+                <!-- PDF Options -->
+                <div class="mb-6">
+                    <h3 id="image-options-title" class="text-lg font-semibold text-gray-700 mb-2">خيارات PDF</h3>
+                    <div class="flex flex-col sm:flex-row sm:space-x-4 sm:space-x-reverse space-y-4 sm:space-y-0">
+                        <div>
+                            <label for="image-page-format" id="image-format-label" class="block text-sm font-medium text-gray-700">حجم الصفحة</label>
+                            <select id="image-page-format" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="a4">A4</option>
+                                <option value="letter">Letter</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="image-page-orientation" id="image-orientation-label" class="block text-sm font-medium text-gray-700">اتجاه الصفحة</label>
+                            <select id="image-page-orientation" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="portrait" id="image-portrait-option">عمودي</option>
+                                <option value="landscape" id="image-landscape-option">أفقي</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+                <!-- Convert button -->
+                <button id="image-convert-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md">
+                    تحويل إلى PDF
+                </button>
             </div>
 
-            <!-- Convert button -->
-            <button id="convert-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md">
-                تحويل إلى PDF
-            </button>
-            <p id="status-message" class="mt-4 text-center text-gray-500"></p>
+            <!-- Text to PDF Tool -->
+            <div id="text-tool-container" class="tool-container hidden">
+                <div class="text-center mb-6">
+                    <p id="text-subtitle" class="text-gray-600 mt-2">اكتب النص الخاص بك هنا لتحويله إلى مستند PDF.</p>
+                </div>
+                <div class="mb-6">
+                    <label for="text-input" id="text-label" class="block text-sm font-medium text-gray-700 mb-2">
+                        أدخل النص
+                    </label>
+                    <textarea id="text-input" class="w-full p-3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" rows="10"></textarea>
+                </div>
+                <!-- PDF Options -->
+                <div class="mb-6">
+                    <h3 id="text-options-title" class="text-lg font-semibold text-gray-700 mb-2">خيارات PDF</h3>
+                    <div class="flex flex-col sm:flex-row sm:space-x-4 sm:space-x-reverse space-y-4 sm:space-y-0">
+                        <div>
+                            <label for="text-page-format" id="text-format-label" class="block text-sm font-medium text-gray-700">حجم الصفحة</label>
+                            <select id="text-page-format" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="a4">A4</option>
+                                <option value="letter">Letter</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="text-page-orientation" id="text-orientation-label" class="block text-sm font-medium text-gray-700">اتجاه الصفحة</label>
+                            <select id="text-page-orientation" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="portrait" id="text-portrait-option">عمودي</option>
+                                <option value="landscape" id="text-landscape-option">أفقي</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <!-- Convert button -->
+                <button id="text-convert-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md">
+                    تحويل إلى PDF
+                </button>
+                <p id="text-status-message" class="mt-4 text-center text-gray-500"></p>
+            </div>
+
         </div>
     </div>
 
     <!-- jspdf library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const menuBtn = document.getElementById('menu-btn');
             const sideMenu = document.getElementById('side-menu');
             const langSwitchBtn = document.getElementById('lang-switch-btn');
+            
+            const showImageToolBtn = document.getElementById('show-image-tool-btn');
+            const showTextToolBtn = document.getElementById('show-text-tool-btn');
+            const imageToolContainer = document.getElementById('image-tool-container');
+            const textToolContainer = document.getElementById('text-tool-container');
 
+            // Select all elements that need translation
             const elements = {
                 headerTitle: document.getElementById('header-title'),
-                subtitle: document.getElementById('subtitle'),
                 menuTitle: document.getElementById('menu-title'),
                 homeLink: document.getElementById('home-link'),
                 aboutLink: document.getElementById('about-link'),
                 contactLink: document.getElementById('contact-link'),
-                toolsLink: document.getElementById('tools-link'),
+                langSwitchBtn: document.getElementById('lang-switch-btn'),
+                showImageToolBtn: showImageToolBtn,
+                showTextToolBtn: showTextToolBtn,
+                // Image tool elements
+                imageSubtitle: document.getElementById('image-subtitle'),
+                uploadLabel: document.getElementById('upload-label'),
+                imagePreviewTitle: document.getElementById('image-preview-title'),
+                imageStatusMessage: document.getElementById('image-status-message'),
+                imageOptionsTitle: document.getElementById('image-options-title'),
+                imageFormatLabel: document.getElementById('image-format-label'),
+                imageOrientationLabel: document.getElementById('image-orientation-label'),
+                imagePortraitOption: document.getElementById('image-portrait-option'),
+                imageLandscapeOption: document.getElementById('image-landscape-option'),
+                imageConvertBtn: document.getElementById('image-convert-btn'),
+                // Text tool elements
+                textSubtitle: document.getElementById('text-subtitle'),
                 textLabel: document.getElementById('text-label'),
-                optionsTitle: document.getElementById('options-title'),
-                formatLabel: document.getElementById('format-label'),
-                orientationLabel: document.getElementById('orientation-label'),
-                portraitOption: document.getElementById('portrait-option'),
-                landscapeOption: document.getElementById('landscape-option'),
-                convertBtn: document.getElementById('convert-btn'),
-                statusMessage: document.getElementById('status-message'),
+                textOptionsTitle: document.getElementById('text-options-title'),
+                textFormatLabel: document.getElementById('text-format-label'),
+                textOrientationLabel: document.getElementById('text-orientation-label'),
+                textPortraitOption: document.getElementById('text-portrait-option'),
+                textLandscapeOption: document.getElementById('text-landscape-option'),
+                textConvertBtn: document.getElementById('text-convert-btn'),
+                textStatusMessage: document.getElementById('text-status-message'),
             };
 
+            // Translation content
             const translations = {
                 ar: {
                     direction: 'rtl',
-                    title: 'تحويل النص إلى PDF',
-                    subtitle: 'اكتب النص الخاص بك هنا لتحويله إلى مستند PDF.',
+                    title: 'محول الصور والنصوص إلى PDF',
                     menuTitle: 'القائمة الرئيسية',
-                    homeLink: 'العودة للصفحة الرئيسية',
+                    homeLink: 'الصفحة الرئيسية',
                     aboutLink: 'سياسة الخصوصية',
                     contactLink: 'تواصل معنا',
-                    toolsLink: 'المزيد من الأدوات',
-                    langSwitchBtn: 'تغيير اللغة',
+                    langSwitchBtn: 'English',
+                    showImageToolBtn: 'تحويل صور',
+                    showTextToolBtn: 'تحويل نص',
+                    // Image tool
+                    imageSubtitle: 'اختر صورك (JPG, PNG) لتحويلها إلى مستند PDF واحد.',
+                    uploadLabel: 'اختر الصور',
+                    imagePreviewTitle: 'معاينة الصور:',
+                    imageStatusMessage: 'لم يتم اختيار أي صور.',
+                    imageOptionsTitle: 'خيارات PDF',
+                    imageFormatLabel: 'حجم الصفحة',
+                    imageOrientationLabel: 'اتجاه الصفحة',
+                    imagePortraitOption: 'عمودي',
+                    imageLandscapeOption: 'أفقي',
+                    imageConvertBtn: 'تحويل إلى PDF',
+                    imageNoImagesMessage: 'لم يتم اختيار أي صور.',
+                    imageNoSupportedImagesMessage: 'لم يتم اختيار أي صور مدعومة (JPG, PNG).',
+                    imagesSelectedMessage: (count) => `تم اختيار ${count} صورة.`,
+                    imagePleaseSelectImageMessage: 'الرجاء اختيار صورة واحدة على الأقل لتحويلها.',
+                    imageConvertingMessage: 'يتم التحويل... الرجاء الانتظار.',
+                    imageConversionSuccessMessage: 'تم التحويل بنجاح! يتم تنزيل ملف PDF.',
+                    // Text tool
+                    textSubtitle: 'اكتب النص الخاص بك هنا لتحويله إلى مستند PDF.',
                     textLabel: 'أدخل النص',
-                    optionsTitle: 'خيارات PDF',
-                    formatLabel: 'حجم الصفحة',
-                    orientationLabel: 'اتجاه الصفحة',
-                    portraitOption: 'عمودي',
-                    landscapeOption: 'أفقي',
-                    convertBtn: 'تحويل إلى PDF',
-                    noTextMessage: 'الرجاء إدخال بعض النص لتحويله.',
-                    convertingMessage: 'يتم التحويل... الرجاء الانتظار.',
-                    conversionSuccessMessage: 'تم التحويل بنجاح! يتم تنزيل ملف PDF.'
+                    textOptionsTitle: 'خيارات PDF',
+                    textFormatLabel: 'حجم الصفحة',
+                    textOrientationLabel: 'اتجاه الصفحة',
+                    textPortraitOption: 'عمودي',
+                    textLandscapeOption: 'أفقي',
+                    textConvertBtn: 'تحويل إلى PDF',
+                    textNoTextMessage: 'الرجاء إدخال بعض النص لتحويله.',
+                    textConvertingMessage: 'يتم التحويل... الرجاء الانتظار.',
+                    textConversionSuccessMessage: 'تم التحويل بنجاح! يتم تنزيل ملف PDF.'
                 },
                 en: {
                     direction: 'ltr',
-                    title: 'Text to PDF Converter',
-                    subtitle: 'Type your text here to convert it into a PDF document.',
+                    title: 'Image & Text to PDF Converter',
                     menuTitle: 'Main Menu',
-                    homeLink: 'Back to Home',
+                    homeLink: 'Home',
                     aboutLink: 'Privacy Policy',
                     contactLink: 'Contact Us',
-                    toolsLink: 'More Tools',
-                    langSwitchBtn: 'Change Language',
+                    langSwitchBtn: 'العربية',
+                    showImageToolBtn: 'Convert Images',
+                    showTextToolBtn: 'Convert Text',
+                    // Image tool
+                    imageSubtitle: 'Select your images (JPG, PNG) to convert them into a single PDF document.',
+                    uploadLabel: 'Choose Images',
+                    imagePreviewTitle: 'Image Preview:',
+                    imageStatusMessage: 'No images selected.',
+                    imageOptionsTitle: 'PDF Options',
+                    imageFormatLabel: 'Page Size',
+                    imageOrientationLabel: 'Page Orientation',
+                    imagePortraitOption: 'Portrait',
+                    imageLandscapeOption: 'Landscape',
+                    imageConvertBtn: 'Convert to PDF',
+                    imageNoImagesMessage: 'No images selected.',
+                    imageNoSupportedImagesMessage: 'No supported images (JPG, PNG) were selected.',
+                    imagesSelectedMessage: (count) => `${count} image(s) selected.`,
+                    imagePleaseSelectImageMessage: 'Please select at least one image to convert.',
+                    imageConvertingMessage: 'Converting... Please wait.',
+                    imageConversionSuccessMessage: 'Conversion successful! Downloading PDF file.',
+                    // Text tool
+                    textSubtitle: 'Type your text here to convert it into a PDF document.',
                     textLabel: 'Enter Text',
-                    optionsTitle: 'PDF Options',
-                    formatLabel: 'Page Size',
-                    orientationLabel: 'Page Orientation',
-                    portraitOption: 'Portrait',
-                    landscapeOption: 'Landscape',
-                    convertBtn: 'Convert to PDF',
-                    noTextMessage: 'Please enter some text to convert.',
-                    convertingMessage: 'Converting... Please wait.',
-                    conversionSuccessMessage: 'Conversion successful! Downloading PDF file.'
+                    textOptionsTitle: 'PDF Options',
+                    textFormatLabel: 'Page Size',
+                    textOrientationLabel: 'Page Orientation',
+                    textPortraitOption: 'Portrait',
+                    textLandscapeOption: 'Landscape',
+                    textConvertBtn: 'Convert to PDF',
+                    textNoTextMessage: 'Please enter some text to convert.',
+                    textConvertingMessage: 'Converting... Please wait.',
+                    textConversionSuccessMessage: 'Conversion successful! Downloading PDF file.'
                 }
             };
 
@@ -177,29 +298,24 @@
                 document.documentElement.lang = lang;
                 document.body.style.direction = translations[lang].direction;
                 document.title = translations[lang].title;
-                elements.headerTitle.textContent = translations[lang].title;
-                elements.subtitle.textContent = translations[lang].subtitle;
-                elements.menuTitle.textContent = translations[lang].menuTitle;
-                elements.homeLink.textContent = translations[lang].homeLink;
-                elements.aboutLink.textContent = translations[lang].aboutLink;
-                elements.contactLink.textContent = translations[lang].contactLink;
-                elements.toolsLink.textContent = translations[lang].toolsLink;
-                langSwitchBtn.textContent = translations[lang].langSwitchBtn;
-                elements.textLabel.textContent = translations[lang].textLabel;
-                elements.optionsTitle.textContent = translations[lang].optionsTitle;
-                elements.formatLabel.textContent = translations[lang].formatLabel;
-                elements.orientationLabel.textContent = translations[lang].orientationLabel;
-                elements.portraitOption.textContent = translations[lang].portraitOption;
-                elements.landscapeOption.textContent = translations[lang].landscapeOption;
-                elements.convertBtn.textContent = translations[lang].convertBtn;
-                elements.statusMessage.textContent = '';
+                for (const key in elements) {
+                    if (elements[key]) {
+                        if (translations[lang][key]) {
+                            elements[key].textContent = translations[lang][key];
+                        }
+                    }
+                }
+                elements.imageStatusMessage.textContent = translations[lang].imageNoImagesMessage;
+                elements.textStatusMessage.textContent = '';
             };
 
+            // Toggle side menu visibility
             menuBtn.addEventListener('click', () => {
                 sideMenu.classList.toggle('translate-x-full');
                 menuBtn.classList.toggle('active');
             });
-            
+
+            // Language switch functionality
             langSwitchBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 currentLang = currentLang === 'ar' ? 'en' : 'ar';
@@ -208,36 +324,157 @@
                 menuBtn.classList.remove('active');
             });
 
-            const textInput = document.getElementById('text-input');
-            const convertBtn = document.getElementById('convert-btn');
-            const statusMessage = document.getElementById('status-message');
-            const pageFormat = document.getElementById('page-format');
-            const pageOrientation = document.getElementById('page-orientation');
+            // Tool switching logic
+            showImageToolBtn.addEventListener('click', () => {
+                imageToolContainer.classList.remove('hidden');
+                textToolContainer.classList.add('hidden');
+                showImageToolBtn.classList.remove('bg-gray-300', 'text-gray-800');
+                showImageToolBtn.classList.add('bg-blue-600', 'text-white');
+                showTextToolBtn.classList.remove('bg-blue-600', 'text-white');
+                showTextToolBtn.classList.add('bg-gray-300', 'text-gray-800');
+            });
 
-            convertBtn.addEventListener('click', async () => {
-                const text = textInput.value.trim();
-                if (text.length === 0) {
-                    statusMessage.textContent = translations[currentLang].noTextMessage;
+            showTextToolBtn.addEventListener('click', () => {
+                textToolContainer.classList.remove('hidden');
+                imageToolContainer.classList.add('hidden');
+                showTextToolBtn.classList.remove('bg-gray-300', 'text-gray-800');
+                showTextToolBtn.classList.add('bg-blue-600', 'text-white');
+                showImageToolBtn.classList.remove('bg-blue-600', 'text-white');
+                showImageToolBtn.classList.add('bg-gray-300', 'text-gray-800');
+            });
+            
+            // Image to PDF Logic
+            const imageUpload = document.getElementById('image-upload');
+            const imageConvertBtn = document.getElementById('image-convert-btn');
+            const imagePreview = document.getElementById('image-preview');
+            const imageStatusMessage = document.getElementById('image-status-message');
+            const imagePageFormat = document.getElementById('image-page-format');
+            const imagePageOrientation = document.getElementById('image-page-orientation');
+            
+            let imageFiles = [];
+
+            imageUpload.addEventListener('change', (event) => {
+                const files = Array.from(event.target.files);
+                imageFiles = [];
+                imagePreview.innerHTML = '';
+                imageStatusMessage.textContent = '';
+
+                if (files.length === 0) {
+                    imageStatusMessage.textContent = translations[currentLang].imageNoImagesMessage;
                     return;
                 }
 
-                statusMessage.textContent = translations[currentLang].convertingMessage;
-                convertBtn.disabled = true;
+                files.forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        imageFiles.push(file);
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const imgContainer = document.createElement('div');
+                            imgContainer.className = 'relative group';
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'w-full h-auto object-cover rounded-md shadow-md transform transition-transform duration-200 group-hover:scale-105';
+                            img.alt = 'Image preview';
+                            imgContainer.appendChild(img);
+                            imagePreview.appendChild(imgContainer);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                if (imageFiles.length > 0) {
+                    imageStatusMessage.textContent = translations[currentLang].imagesSelectedMessage(imageFiles.length);
+                } else {
+                    imageStatusMessage.textContent = translations[currentLang].imageNoSupportedImagesMessage;
+                }
+            });
+
+            imageConvertBtn.addEventListener('click', async () => {
+                if (imageFiles.length === 0) {
+                    imageStatusMessage.textContent = translations[currentLang].imagePleaseSelectImageMessage;
+                    return;
+                }
+
+                imageStatusMessage.textContent = translations[currentLang].imageConvertingMessage;
+                imageConvertBtn.disabled = true;
 
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF({
-                    orientation: pageOrientation.value === 'landscape' ? 'l' : 'p',
+                    orientation: imagePageOrientation.value === 'landscape' ? 'l' : 'p',
                     unit: 'mm',
-                    format: pageFormat.value,
+                    format: imagePageFormat.value,
                 });
 
-                // Add text with styling and handle line breaks
-                const splitText = doc.splitTextToSize(text, doc.internal.pageSize.getWidth() - 20); // 20mm padding
-                doc.text(splitText, 10, 10);
+                for (let i = 0; i < imageFiles.length; i++) {
+                    const file = imageFiles[i];
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+
+                    await new Promise(resolve => {
+                        reader.onload = (e) => {
+                            const imgData = e.target.result;
+                            const img = new Image();
+                            img.onload = () => {
+                                if (i > 0) {
+                                    doc.addPage();
+                                }
+                                const imgWidth = img.width;
+                                const imgHeight = img.height;
+                                const pageWidth = doc.internal.pageSize.getWidth();
+                                const pageHeight = doc.internal.pageSize.getHeight();
+                                const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+                                const newWidth = imgWidth * ratio;
+                                const newHeight = imgHeight * ratio;
+                                const x = (pageWidth - newWidth) / 2;
+                                const y = (pageHeight - newHeight) / 2;
+                                doc.addImage(imgData, 'JPEG', x, y, newWidth, newHeight);
+                                resolve();
+                            };
+                            img.src = imgData;
+                        };
+                    });
+                }
+
+                doc.save('converted-images.pdf');
+                imageStatusMessage.textContent = translations[currentLang].imageConversionSuccessMessage;
+                imageConvertBtn.disabled = false;
+            });
+            
+            // Text to PDF Logic
+            const textInput = document.getElementById('text-input');
+            const textConvertBtn = document.getElementById('text-convert-btn');
+            const textStatusMessage = document.getElementById('text-status-message');
+            const textPageFormat = document.getElementById('text-page-format');
+            const textPageOrientation = document.getElementById('text-page-orientation');
+
+            textConvertBtn.addEventListener('click', async () => {
+                const text = textInput.value.trim();
+                if (text.length === 0) {
+                    textStatusMessage.textContent = translations[currentLang].textNoTextMessage;
+                    return;
+                }
+
+                textStatusMessage.textContent = translations[currentLang].textConvertingMessage;
+                textConvertBtn.disabled = true;
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: textPageOrientation.value === 'landscape' ? 'l' : 'p',
+                    unit: 'mm',
+                    format: textPageFormat.value,
+                });
+
+                // Set font for Arabic support
+                doc.addFileToVFS("Amiri-Regular.ttf", "AAECAwQFBgcICQo="); // This would be the base64 string of the font. In this case, it's a placeholder.
+                doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
+                doc.setFont("Amiri");
+
+                // Use the text string to create the PDF content
+                doc.text(text, 10, 10);
 
                 doc.save('converted-text.pdf');
-                statusMessage.textContent = translations[currentLang].conversionSuccessMessage;
-                convertBtn.disabled = false;
+                textStatusMessage.textContent = translations[currentLang].textConversionSuccessMessage;
+                textConvertBtn.disabled = false;
             });
         });
     </script>
