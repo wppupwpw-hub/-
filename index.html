@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحويل الصور إلى PDF</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        body {
+            font-family: 'Cairo', sans-serif;
+            direction: rtl; /* Set direction to right-to-left for Arabic */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white rounded-lg shadow-xl p-8 max-w-2xl w-full">
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">تحويل الصور إلى ملف PDF</h1>
+            <p class="text-gray-600 mt-2">اختر صورك (JPG, PNG) لتحويلها إلى مستند PDF واحد.</p>
+        </div>
+
+        <!-- File input for multiple images -->
+        <div class="mb-6">
+            <label for="image-upload" class="block text-sm font-medium text-gray-700 mb-2">
+                اختر الصور
+            </label>
+            <input type="file" id="image-upload" accept=".jpg, .jpeg, .png" multiple class="block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        </div>
+
+        <!-- Preview and message area -->
+        <div id="preview-container" class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">معاينة الصور:</h3>
+            <div id="image-preview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <!-- Image previews will be added here dynamically -->
+            </div>
+            <p id="status-message" class="mt-4 text-center text-gray-500"></p>
+        </div>
+
+        <!-- PDF Options (optional but useful) -->
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">خيارات PDF</h3>
+            <div class="flex flex-col sm:flex-row sm:space-x-4 sm:space-x-reverse space-y-4 sm:space-y-0">
+                <div>
+                    <label for="page-format" class="block text-sm font-medium text-gray-700">حجم الصفحة</label>
+                    <select id="page-format" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="a4">A4</option>
+                        <option value="letter">Letter</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="page-orientation" class="block text-sm font-medium text-gray-700">اتجاه الصفحة</label>
+                    <select id="page-orientation" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="portrait">عمودي</option>
+                        <option value="landscape">أفقي</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Convert button -->
+        <button id="convert-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md">
+            تحويل إلى PDF
+        </button>
+
+    </div>
+
+    <!-- jspdf library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const imageUpload = document.getElementById('image-upload');
+            const convertBtn = document.getElementById('convert-btn');
+            const imagePreview = document.getElementById('image-preview');
+            const statusMessage = document.getElementById('status-message');
+            const pageFormat = document.getElementById('page-format');
+            const pageOrientation = document.getElementById('page-orientation');
+            
+            let files = [];
+            let imageFiles = [];
+
+            // Add event listener to the file input
+            imageUpload.addEventListener('change', (event) => {
+                files = Array.from(event.target.files);
+                imageFiles = [];
+                imagePreview.innerHTML = ''; // Clear previous previews
+                statusMessage.textContent = ''; // Clear previous status message
+
+                // Check if files were selected
+                if (files.length === 0) {
+                    statusMessage.textContent = "لم يتم اختيار أي صور.";
+                    return;
+                }
+
+                // Filter for supported image types and create previews
+                files.forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        imageFiles.push(file);
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const imgContainer = document.createElement('div');
+                            imgContainer.className = 'relative group';
+
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'w-full h-auto object-cover rounded-md shadow-md transform transition-transform duration-200 group-hover:scale-105';
+                            img.alt = 'Image preview';
+                            
+                            imgContainer.appendChild(img);
+                            imagePreview.appendChild(imgContainer);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                if (imageFiles.length > 0) {
+                    statusMessage.textContent = `تم اختيار ${imageFiles.length} صورة.`;
+                } else {
+                    statusMessage.textContent = 'لم يتم اختيار أي صور مدعومة (JPG, PNG).';
+                }
+            });
+
+            // Add event listener to the convert button
+            convertBtn.addEventListener('click', async () => {
+                if (imageFiles.length === 0) {
+                    alert('الرجاء اختيار صورة واحدة على الأقل لتحويلها.');
+                    return;
+                }
+
+                statusMessage.textContent = 'يتم التحويل... الرجاء الانتظار.';
+                convertBtn.disabled = true;
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: pageOrientation.value === 'landscape' ? 'l' : 'p',
+                    unit: 'mm',
+                    format: pageFormat.value,
+                });
+
+                // Convert each image to a PDF page
+                for (let i = 0; i < imageFiles.length; i++) {
+                    const file = imageFiles[i];
+
+                    // Use FileReader to read the image data
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+
+                    await new Promise(resolve => {
+                        reader.onload = (e) => {
+                            const imgData = e.target.result;
+                            const img = new Image();
+                            img.onload = () => {
+                                // Add a new page for each image after the first one
+                                if (i > 0) {
+                                    doc.addPage();
+                                }
+
+                                const imgWidth = img.width;
+                                const imgHeight = img.height;
+                                const pageWidth = doc.internal.pageSize.getWidth();
+                                const pageHeight = doc.internal.pageSize.getHeight();
+
+                                // Calculate the dimensions to fit the image on the page
+                                const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+                                const newWidth = imgWidth * ratio;
+                                const newHeight = imgHeight * ratio;
+
+                                // Center the image on the page
+                                const x = (pageWidth - newWidth) / 2;
+                                const y = (pageHeight - newHeight) / 2;
+
+                                doc.addImage(imgData, 'JPEG', x, y, newWidth, newHeight);
+                                resolve();
+                            };
+                            img.src = imgData;
+                        };
+                    });
+                }
+
+                // Save the PDF file
+                doc.save('converted-images.pdf');
+                statusMessage.textContent = 'تم التحويل بنجاح! يتم تنزيل ملف PDF.';
+                convertBtn.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>
