@@ -8,12 +8,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
         body {
+            /* Font family will be set dynamically based on language */
             font-family: 'Cairo', sans-serif;
-            direction: rtl; /* Set direction to right-to-left for Arabic */
             padding-top: 64px; /* Add padding to body to prevent content from hiding behind the header */
         }
-        /* Style for the hamburger icon animation */
+        
         .menu-icon-btn.active .line:nth-child(1) {
             transform: translateY(8px) rotate(45deg);
         }
@@ -51,7 +53,13 @@
                 <a href="#" id="home-link" class="block text-gray-700 hover:text-blue-600 font-semibold transition-colors duration-200">الصفحة الرئيسية</a>
                 <a href="https://roaring-sprite-ab613f.netlify.app/" id="about-link" class="block text-gray-700 hover:text-blue-600 font-semibold transition-colors duration-200">سياسة الخصوصية</a>
                 <a href="https://www.facebook.com/mohtech.itz" id="contact-link" target="_blank" class="block text-gray-700 hover:text-blue-600 font-semibold transition-colors duration-200">تواصل معنا</a>
-                <a href="#" id="lang-switch-btn" class="block text-gray-700 hover:text-blue-600 font-semibold transition-colors duration-200">تغيير اللغة</a>
+                <div class="mt-4">
+                    <label for="lang-select" class="block text-gray-700 font-semibold mb-2" id="lang-label">تغيير اللغة</label>
+                    <select id="lang-select" class="block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="ar">العربية</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
             </nav>
         </div>
     </div>
@@ -60,7 +68,7 @@
     <div class="w-full max-w-2xl mt-8 p-4">
         <div class="bg-white rounded-lg shadow-xl p-8 w-full">
             <!-- Tool Selector -->
-            <div class="flex justify-center space-x-4 space-x-reverse mb-6">
+            <div class="flex justify-center space-x-16 space-x-reverse mb-6" id="tool-selector-container">
                 <button id="show-image-tool-btn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 hover:bg-blue-700">
                     تحويل صور
                 </button>
@@ -88,8 +96,8 @@
                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 </div>
                 <!-- Preview and message area -->
-                <div id="image-preview-container" class="mb-6">
-                    <h3 id="image-preview-title" class="text-lg font-semibold text-gray-700 mb-2">معاينة الصور:</h3>
+                <div id="image-preview-container" class="mb-6 h-56 overflow-y-auto border border-gray-300 rounded-md p-4">
+                    <h3 id="image-preview-title" class="text-lg font-semibold text-gray-700 mb-2 sticky top-0 bg-white z-10">معاينة الصور:</h3>
                     <div id="image-preview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         <!-- Image previews will be added here dynamically -->
                     </div>
@@ -164,16 +172,18 @@
 
     <!-- jspdf library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const menuBtn = document.getElementById('menu-btn');
             const sideMenu = document.getElementById('side-menu');
-            const langSwitchBtn = document.getElementById('lang-switch-btn');
+            const langSelect = document.getElementById('lang-select');
             
             const showImageToolBtn = document.getElementById('show-image-tool-btn');
             const showTextToolBtn = document.getElementById('show-text-tool-btn');
             const imageToolContainer = document.getElementById('image-tool-container');
             const textToolContainer = document.getElementById('text-tool-container');
+            const toolSelectorContainer = document.getElementById('tool-selector-container');
 
             // Select all elements that need translation
             const elements = {
@@ -182,14 +192,13 @@
                 homeLink: document.getElementById('home-link'),
                 aboutLink: document.getElementById('about-link'),
                 contactLink: document.getElementById('contact-link'),
-                langSwitchBtn: document.getElementById('lang-switch-btn'),
+                langLabel: document.getElementById('lang-label'),
                 showImageToolBtn: showImageToolBtn,
                 showTextToolBtn: showTextToolBtn,
                 // Image tool elements
                 imageSubtitle: document.getElementById('image-subtitle'),
                 uploadLabel: document.getElementById('upload-label'),
                 imagePreviewTitle: document.getElementById('image-preview-title'),
-                imageStatusMessage: document.getElementById('image-status-message'),
                 imageOptionsTitle: document.getElementById('image-options-title'),
                 imageFormatLabel: document.getElementById('image-format-label'),
                 imageOrientationLabel: document.getElementById('image-orientation-label'),
@@ -205,19 +214,20 @@
                 textPortraitOption: document.getElementById('text-portrait-option'),
                 textLandscapeOption: document.getElementById('text-landscape-option'),
                 textConvertBtn: document.getElementById('text-convert-btn'),
-                textStatusMessage: document.getElementById('text-status-message'),
             };
 
             // Translation content
             const translations = {
                 ar: {
                     direction: 'rtl',
+                    fontFamily: 'Cairo',
+                    toolSelectorClass: 'space-x-16 space-x-reverse',
                     title: 'محول الصور والنصوص إلى PDF',
                     menuTitle: 'القائمة الرئيسية',
                     homeLink: 'الصفحة الرئيسية',
                     aboutLink: 'سياسة الخصوصية',
                     contactLink: 'تواصل معنا',
-                    langSwitchBtn: 'English',
+                    langLabel: 'تغيير اللغة',
                     showImageToolBtn: 'تحويل صور',
                     showTextToolBtn: 'تحويل نص',
                     // Image tool
@@ -252,12 +262,14 @@
                 },
                 en: {
                     direction: 'ltr',
+                    fontFamily: 'Inter',
+                    toolSelectorClass: 'space-x-16',
                     title: 'Image & Text to PDF Converter',
                     menuTitle: 'Main Menu',
                     homeLink: 'Home',
                     aboutLink: 'Privacy Policy',
                     contactLink: 'Contact Us',
-                    langSwitchBtn: 'العربية',
+                    langLabel: 'Change Language',
                     showImageToolBtn: 'Convert Images',
                     showTextToolBtn: 'Convert Text',
                     // Image tool
@@ -293,11 +305,16 @@
             };
 
             let currentLang = 'ar';
+            const imageStatusMessageElement = document.getElementById('image-status-message');
+            const textStatusMessageElement = document.getElementById('text-status-message');
 
             const updateText = (lang) => {
                 document.documentElement.lang = lang;
                 document.body.style.direction = translations[lang].direction;
+                document.body.style.fontFamily = `'${translations[lang].fontFamily}', sans-serif`;
                 document.title = translations[lang].title;
+                toolSelectorContainer.className = `flex justify-center mb-6 ${translations[lang].toolSelectorClass}`;
+
                 for (const key in elements) {
                     if (elements[key]) {
                         if (translations[lang][key]) {
@@ -305,8 +322,16 @@
                         }
                     }
                 }
-                elements.imageStatusMessage.textContent = translations[lang].imageNoImagesMessage;
-                elements.textStatusMessage.textContent = '';
+                
+                // Update status messages explicitly
+                imageStatusMessageElement.textContent = translations[lang].imageNoImagesMessage;
+                textStatusMessageElement.textContent = '';
+                
+                // Update select options text
+                document.getElementById('image-portrait-option').textContent = translations[lang].imagePortraitOption;
+                document.getElementById('image-landscape-option').textContent = translations[lang].imageLandscapeOption;
+                document.getElementById('text-portrait-option').textContent = translations[lang].textPortraitOption;
+                document.getElementById('text-landscape-option').textContent = translations[lang].textLandscapeOption;
             };
 
             // Toggle side menu visibility
@@ -315,10 +340,9 @@
                 menuBtn.classList.toggle('active');
             });
 
-            // Language switch functionality
-            langSwitchBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            // Language switch functionality using the new select element
+            langSelect.addEventListener('change', (e) => {
+                currentLang = e.target.value;
                 updateText(currentLang);
                 sideMenu.classList.add('translate-x-full');
                 menuBtn.classList.remove('active');
@@ -347,7 +371,6 @@
             const imageUpload = document.getElementById('image-upload');
             const imageConvertBtn = document.getElementById('image-convert-btn');
             const imagePreview = document.getElementById('image-preview');
-            const imageStatusMessage = document.getElementById('image-status-message');
             const imagePageFormat = document.getElementById('image-page-format');
             const imagePageOrientation = document.getElementById('image-page-orientation');
             
@@ -357,10 +380,10 @@
                 const files = Array.from(event.target.files);
                 imageFiles = [];
                 imagePreview.innerHTML = '';
-                imageStatusMessage.textContent = '';
+                imageStatusMessageElement.textContent = '';
 
                 if (files.length === 0) {
-                    imageStatusMessage.textContent = translations[currentLang].imageNoImagesMessage;
+                    imageStatusMessageElement.textContent = translations[currentLang].imageNoImagesMessage;
                     return;
                 }
 
@@ -383,19 +406,19 @@
                 });
 
                 if (imageFiles.length > 0) {
-                    imageStatusMessage.textContent = translations[currentLang].imagesSelectedMessage(imageFiles.length);
+                    imageStatusMessageElement.textContent = translations[currentLang].imagesSelectedMessage(imageFiles.length);
                 } else {
-                    imageStatusMessage.textContent = translations[currentLang].imageNoSupportedImagesMessage;
+                    imageStatusMessageElement.textContent = translations[currentLang].imageNoSupportedImagesMessage;
                 }
             });
 
             imageConvertBtn.addEventListener('click', async () => {
                 if (imageFiles.length === 0) {
-                    imageStatusMessage.textContent = translations[currentLang].imagePleaseSelectImageMessage;
+                    imageStatusMessageElement.textContent = translations[currentLang].imagePleaseSelectImageMessage;
                     return;
                 }
 
-                imageStatusMessage.textContent = translations[currentLang].imageConvertingMessage;
+                imageStatusMessageElement.textContent = translations[currentLang].imageConvertingMessage;
                 imageConvertBtn.disabled = true;
 
                 const { jsPDF } = window.jspdf;
@@ -436,25 +459,24 @@
                 }
 
                 doc.save('converted-images.pdf');
-                imageStatusMessage.textContent = translations[currentLang].imageConversionSuccessMessage;
+                imageStatusMessageElement.textContent = translations[currentLang].imageConversionSuccessMessage;
                 imageConvertBtn.disabled = false;
             });
             
             // Text to PDF Logic
             const textInput = document.getElementById('text-input');
             const textConvertBtn = document.getElementById('text-convert-btn');
-            const textStatusMessage = document.getElementById('text-status-message');
             const textPageFormat = document.getElementById('text-page-format');
             const textPageOrientation = document.getElementById('text-page-orientation');
 
             textConvertBtn.addEventListener('click', async () => {
                 const text = textInput.value.trim();
                 if (text.length === 0) {
-                    textStatusMessage.textContent = translations[currentLang].textNoTextMessage;
+                    textStatusMessageElement.textContent = translations[currentLang].textNoTextMessage;
                     return;
                 }
 
-                textStatusMessage.textContent = translations[currentLang].textConvertingMessage;
+                textStatusMessageElement.textContent = translations[currentLang].textConvertingMessage;
                 textConvertBtn.disabled = true;
 
                 const { jsPDF } = window.jspdf;
@@ -465,17 +487,30 @@
                 });
 
                 // Set font for Arabic support
-                doc.addFileToVFS("Amiri-Regular.ttf", "AAECAwQFBgcICQo="); // This would be the base64 string of the font. In this case, it's a placeholder.
-                doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
-                doc.setFont("Amiri");
+                const fontUrl = 'https://fonts.gstatic.com/s/cairo/v18/yYL-W_QzP3t_LgqD8g3_qEw.ttf';
+                try {
+                    const fontBytes = await fetch(fontUrl).then(res => res.arrayBuffer());
+                    doc.addFileToVFS('Cairo-Regular.ttf', btoa(String.fromCharCode.apply(null, new Uint8Array(fontBytes))));
+                    doc.addFont('Cairo-Regular.ttf', 'Cairo', 'normal');
+                    doc.setFont('Cairo');
+                } catch (error) {
+                    console.error('Failed to load font:', error);
+                }
 
-                // Use the text string to create the PDF content
-                doc.text(text, 10, 10);
+                const margin = 10;
+                const lineHeight = 7;
+                const maxWidth = doc.internal.pageSize.getWidth() - 2 * margin;
 
+                const splitText = doc.splitTextToSize(text, maxWidth);
+                doc.text(splitText, margin, margin);
+                
                 doc.save('converted-text.pdf');
-                textStatusMessage.textContent = translations[currentLang].textConversionSuccessMessage;
+                textStatusMessageElement.textContent = translations[currentLang].textConversionSuccessMessage;
                 textConvertBtn.disabled = false;
             });
+
+            // Initial text update based on the default language
+            updateText(currentLang);
         });
     </script>
 </body>
