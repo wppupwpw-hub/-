@@ -170,9 +170,8 @@
         </div>
     </div>
 
-    <!-- jspdf library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const menuBtn = document.getElementById('menu-btn');
@@ -313,6 +312,7 @@
                 document.body.style.direction = translations[lang].direction;
                 document.body.style.fontFamily = `'${translations[lang].fontFamily}', sans-serif`;
                 document.title = translations[lang].title;
+                document.getElementById('header-title').textContent = translations[lang].title;
                 toolSelectorContainer.className = `flex justify-center mb-6 ${translations[lang].toolSelectorClass}`;
 
                 for (const key in elements) {
@@ -468,7 +468,7 @@
             const textConvertBtn = document.getElementById('text-convert-btn');
             const textPageFormat = document.getElementById('text-page-format');
             const textPageOrientation = document.getElementById('text-page-orientation');
-
+            
             textConvertBtn.addEventListener('click', async () => {
                 const text = textInput.value.trim();
                 if (text.length === 0) {
@@ -480,33 +480,43 @@
                 textConvertBtn.disabled = true;
 
                 const { jsPDF } = window.jspdf;
-                const doc = new jsPDF({
-                    orientation: textPageOrientation.value === 'landscape' ? 'l' : 'p',
-                    unit: 'mm',
-                    format: textPageFormat.value,
-                });
 
-                // Set font for Arabic support
-                const fontUrl = 'https://fonts.gstatic.com/s/cairo/v18/yYL-W_QzP3t_LgqD8g3_qEw.ttf';
-                try {
-                    const fontBytes = await fetch(fontUrl).then(res => res.arrayBuffer());
-                    doc.addFileToVFS('Cairo-Regular.ttf', btoa(String.fromCharCode.apply(null, new Uint8Array(fontBytes))));
-                    doc.addFont('Cairo-Regular.ttf', 'Cairo', 'normal');
-                    doc.setFont('Cairo');
-                } catch (error) {
-                    console.error('Failed to load font:', error);
-                }
-
-                const margin = 10;
-                const lineHeight = 7;
-                const maxWidth = doc.internal.pageSize.getWidth() - 2 * margin;
-
-                const splitText = doc.splitTextToSize(text, maxWidth);
-                doc.text(splitText, margin, margin);
+                // Create a temporary element to capture the text
+                const tempDiv = document.createElement('div');
+                tempDiv.textContent = text;
+                tempDiv.style.fontFamily = 'Cairo, sans-serif'; // Use a web font for rendering
+                tempDiv.style.direction = document.body.style.direction; // Set direction for proper rendering
+                tempDiv.style.width = '190mm'; // Set a fixed width to control line breaks
+                tempDiv.style.padding = '10mm';
+                tempDiv.style.backgroundColor = 'white';
+                tempDiv.style.position = 'absolute';
+                tempDiv.style.top = '-9999px';
+                document.body.appendChild(tempDiv);
                 
-                doc.save('converted-text.pdf');
-                textStatusMessageElement.textContent = translations[currentLang].textConversionSuccessMessage;
-                textConvertBtn.disabled = false;
+                try {
+                    const canvas = await html2canvas(tempDiv);
+
+                    const doc = new jsPDF({
+                        orientation: textPageOrientation.value === 'landscape' ? 'l' : 'p',
+                        unit: 'mm',
+                        format: textPageFormat.value,
+                    });
+
+                    const imgData = canvas.toDataURL('image/png');
+                    const imgWidth = doc.internal.pageSize.getWidth() - 20;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                    doc.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+
+                    doc.save('converted-text.pdf');
+                    textStatusMessageElement.textContent = translations[currentLang].textConversionSuccessMessage;
+                } catch (error) {
+                    console.error('Error during text conversion:', error);
+                    textStatusMessageElement.textContent = 'حدث خطأ أثناء تحويل النص.';
+                } finally {
+                    document.body.removeChild(tempDiv);
+                    textConvertBtn.disabled = false;
+                }
             });
 
             // Initial text update based on the default language
