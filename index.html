@@ -123,6 +123,11 @@
                             </select>
                         </div>
                     </div>
+                     <!-- New option for page numbering -->
+                    <div class="mt-4 flex items-center">
+                        <input type="checkbox" id="image-add-page-numbers" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="image-add-page-numbers" id="image-page-numbers-label" class="ml-2 block text-sm text-gray-900">إضافة أرقام الصفحات</label>
+                    </div>
                 </div>
                 <!-- Convert button -->
                 <button id="image-convert-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md">
@@ -159,6 +164,11 @@
                                 <option value="landscape" id="text-landscape-option">أفقي</option>
                             </select>
                         </div>
+                    </div>
+                     <!-- New option for page numbering -->
+                    <div class="mt-4 flex items-center">
+                        <input type="checkbox" id="text-add-page-numbers" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="text-add-page-numbers" id="text-page-numbers-label" class="ml-2 block text-sm text-gray-900">إضافة أرقام الصفحات</label>
                     </div>
                 </div>
                 <!-- Convert button -->
@@ -205,6 +215,7 @@
                 imagePortraitOption: document.getElementById('image-portrait-option'),
                 imageLandscapeOption: document.getElementById('image-landscape-option'),
                 imageConvertBtn: document.getElementById('image-convert-btn'),
+                imagePageNumbersLabel: document.getElementById('image-page-numbers-label'),
                 // Text tool elements
                 textSubtitle: document.getElementById('text-subtitle'),
                 textLabel: document.getElementById('text-label'),
@@ -214,6 +225,7 @@
                 textPortraitOption: document.getElementById('text-portrait-option'),
                 textLandscapeOption: document.getElementById('text-landscape-option'),
                 textConvertBtn: document.getElementById('text-convert-btn'),
+                textPageNumbersLabel: document.getElementById('text-page-numbers-label'),
             };
 
             // Translation content
@@ -241,6 +253,7 @@
                     imagePortraitOption: 'عمودي',
                     imageLandscapeOption: 'أفقي',
                     imageConvertBtn: 'تحويل إلى PDF',
+                    imagePageNumbersLabel: 'إضافة أرقام الصفحات',
                     imageNoImagesMessage: 'لم يتم اختيار أي صور.',
                     imageNoSupportedImagesMessage: 'لم يتم اختيار أي صور مدعومة (JPG, PNG).',
                     imagesSelectedMessage: (count) => `تم اختيار ${count} صورة.`,
@@ -256,6 +269,7 @@
                     textPortraitOption: 'عمودي',
                     textLandscapeOption: 'أفقي',
                     textConvertBtn: 'تحويل إلى PDF',
+                    textPageNumbersLabel: 'إضافة أرقام الصفحات',
                     textNoTextMessage: 'الرجاء إدخال بعض النص لتحويله.',
                     textConvertingMessage: 'يتم التحويل... الرجاء الانتظار.',
                     textConversionSuccessMessage: 'تم التحويل بنجاح! يتم تنزيل ملف PDF.'
@@ -283,6 +297,7 @@
                     imagePortraitOption: 'Portrait',
                     imageLandscapeOption: 'Landscape',
                     imageConvertBtn: 'Convert to PDF',
+                    imagePageNumbersLabel: 'Add Page Numbers',
                     imageNoImagesMessage: 'No images selected.',
                     imageNoSupportedImagesMessage: 'No supported images (JPG, PNG) were selected.',
                     imagesSelectedMessage: (count) => `${count} image(s) selected.`,
@@ -298,6 +313,7 @@
                     textPortraitOption: 'Portrait',
                     textLandscapeOption: 'Landscape',
                     textConvertBtn: 'Convert to PDF',
+                    textPageNumbersLabel: 'Add Page Numbers',
                     textNoTextMessage: 'Please enter some text to convert.',
                     textConvertingMessage: 'Converting... Please wait.',
                     textConversionSuccessMessage: 'Conversion successful! Downloading PDF file.'
@@ -319,7 +335,19 @@
                 for (const key in elements) {
                     if (elements[key]) {
                         if (translations[lang][key]) {
-                            elements[key].textContent = translations[lang][key];
+                             // Check if it's a label with a checkbox
+                            if (elements[key].tagName === 'LABEL' && elements[key].htmlFor.includes('add-page-numbers')) {
+                                elements[key].textContent = translations[lang][key];
+                                if (lang === 'en') {
+                                    elements[key].classList.remove('ml-2');
+                                    elements[key].classList.add('mr-2');
+                                } else {
+                                    elements[key].classList.remove('mr-2');
+                                    elements[key].classList.add('ml-2');
+                                }
+                            } else {
+                                elements[key].textContent = translations[lang][key];
+                            }
                         }
                     }
                 }
@@ -374,6 +402,7 @@
             const imagePreview = document.getElementById('image-preview');
             const imagePageFormat = document.getElementById('image-page-format');
             const imagePageOrientation = document.getElementById('image-page-orientation');
+            const imageAddPageNumbers = document.getElementById('image-add-page-numbers');
             
             let imageFiles = [];
 
@@ -452,6 +481,15 @@
                                 const x = (pageWidth - newWidth) / 2;
                                 const y = (pageHeight - newHeight) / 2;
                                 doc.addImage(imgData, 'JPEG', x, y, newWidth, newHeight);
+
+                                // Add page numbering if enabled
+                                if (imageAddPageNumbers.checked) {
+                                    const pageNumber = i + 1;
+                                    const totalPages = imageFiles.length;
+                                    doc.setFontSize(10);
+                                    doc.text(`${pageNumber}/${totalPages}`, pageWidth - 15, pageHeight - 10, { align: 'right' });
+                                }
+
                                 resolve();
                             };
                             img.src = imgData;
@@ -469,6 +507,7 @@
             const textConvertBtn = document.getElementById('text-convert-btn');
             const textPageFormat = document.getElementById('text-page-format');
             const textPageOrientation = document.getElementById('text-page-orientation');
+            const textAddPageNumbers = document.getElementById('text-add-page-numbers');
             
             textConvertBtn.addEventListener('click', async () => {
                 const text = textInput.value.trim();
@@ -481,45 +520,52 @@
                 textConvertBtn.disabled = true;
 
                 const { jsPDF } = window.jspdf;
-
-                // Create a temporary element to capture the text
-                const tempDiv = document.createElement('div');
-                tempDiv.textContent = text;
-                tempDiv.style.fontFamily = 'Cairo, sans-serif'; // Use a web font for rendering
-                tempDiv.style.direction = document.body.style.direction; // Set direction for proper rendering
-                tempDiv.style.width = '190mm'; // Set a fixed width to control line breaks
-                tempDiv.style.padding = '10mm';
-                tempDiv.style.backgroundColor = 'white';
-                tempDiv.style.position = 'absolute';
-                tempDiv.style.top = '-9999px';
-                document.body.appendChild(tempDiv);
+                const doc = new jsPDF({
+                    orientation: textPageOrientation.value === 'landscape' ? 'l' : 'p',
+                    unit: 'mm',
+                    format: textPageFormat.value,
+                });
                 
-                try {
-                    const canvas = await html2canvas(tempDiv);
+                // Split text into lines that fit the page
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const margin = 20; // in mm
+                const availableWidth = pageWidth - 2 * margin;
+                const availableHeight = pageHeight - 2 * margin;
+                
+                doc.setFont('Cairo'); // Or a font that supports Arabic
+                doc.setFontSize(12);
 
-                    const doc = new jsPDF({
-                        orientation: textPageOrientation.value === 'landscape' ? 'l' : 'p',
-                        unit: 'mm',
-                        format: textPageFormat.value,
-                    });
-
-                    const imgData = canvas.toDataURL('image/png');
-                    const imgWidth = doc.internal.pageSize.getWidth() - 20;
-                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-                    doc.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
-
-                    doc.save('converted-text.pdf');
-                    textStatusMessageElement.textContent = translations[currentLang].textConversionSuccessMessage;
-                } catch (error) {
-                    console.error('Error during text conversion:', error);
-                    textStatusMessageElement.textContent = 'حدث خطأ أثناء تحويل النص.';
-                } finally {
-                    document.body.removeChild(tempDiv);
-                    textConvertBtn.disabled = false;
+                const lines = doc.splitTextToSize(text, availableWidth);
+                let currentY = margin;
+                
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i];
+                    
+                    if (currentY + 5 > pageHeight - margin) { // Check if new page is needed
+                        doc.addPage();
+                        currentY = margin;
+                    }
+                    
+                    doc.text(line, margin, currentY);
+                    currentY += 5; // Line height
                 }
-            });
+                
+                // Add page numbering to all pages if enabled
+                if (textAddPageNumbers.checked) {
+                    const pageCount = doc.internal.getNumberOfPages();
+                    for (let i = 1; i <= pageCount; i++) {
+                        doc.setPage(i);
+                        doc.setFontSize(10);
+                        doc.text(`${i}/${pageCount}`, pageWidth - 15, pageHeight - 10, { align: 'right' });
+                    }
+                }
 
+                doc.save('converted-text.pdf');
+                textStatusMessageElement.textContent = translations[currentLang].textConversionSuccessMessage;
+                textConvertBtn.disabled = false;
+            });
+            
             // Initial text update based on the default language
             updateText(currentLang);
         });
