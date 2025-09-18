@@ -26,6 +26,50 @@
         .menu-icon-btn.active .line:nth-child(3) {
             transform: translateY(-8px) rotate(-45deg);
         }
+
+        .tool-container {
+            display: none;
+        }
+
+        /* Show the active tool */
+        .tool-container.active {
+            display: block;
+        }
+
+        .video-container {
+            width: 100%;
+            height: 300px;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        #camera-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .text-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: bold;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            z-index: 20;
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex flex-col items-center min-h-screen">
@@ -69,17 +113,20 @@
     <div class="w-full max-w-2xl mt-8 p-4">
         <div class="bg-white rounded-lg shadow-xl p-8 w-full">
             <!-- Tool Selector -->
-            <div class="flex justify-center space-x-16 space-x-reverse mb-6" id="tool-selector-container">
+            <div class="flex justify-center space-x-8 space-x-reverse mb-6" id="tool-selector-container">
                 <button id="show-image-tool-btn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 hover:bg-blue-700">
                     تحويل صور
                 </button>
                 <button id="show-text-tool-btn" class="bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 hover:bg-gray-400">
                     تحويل نص
                 </button>
+                <button id="show-scanner-tool-btn" class="bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 hover:bg-gray-400">
+                    مسح ضوئي
+                </button>
             </div>
 
             <!-- Image to PDF Tool -->
-            <div id="image-tool-container" class="tool-container">
+            <div id="image-tool-container" class="tool-container active">
                 <div class="text-center mb-6">
                     <p id="image-subtitle" class="text-gray-600 mt-2">اختر صورك (JPG, PNG) لتحويلها إلى مستند PDF واحد.</p>
                 </div>
@@ -123,7 +170,7 @@
                             </select>
                         </div>
                     </div>
-                     <!-- New option for page numbering -->
+                    <!-- New option for page numbering -->
                     <div class="mt-4 flex items-center">
                         <input type="checkbox" id="image-add-page-numbers" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                         <label for="image-add-page-numbers" id="image-page-numbers-label" class="ml-2 block text-sm text-gray-900">إضافة أرقام الصفحات</label>
@@ -133,10 +180,11 @@
                 <button id="image-convert-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md">
                     تحويل إلى PDF
                 </button>
+                <p id="image-status-message" class="mt-4 text-center text-gray-500"></p>
             </div>
 
             <!-- Text to PDF Tool -->
-            <div id="text-tool-container" class="tool-container hidden">
+            <div id="text-tool-container" class="tool-container">
                 <div class="text-center mb-6">
                     <p id="text-subtitle" class="text-gray-600 mt-2">اكتب النص الخاص بك هنا لتحويله إلى مستند PDF.</p>
                 </div>
@@ -165,7 +213,7 @@
                             </select>
                         </div>
                     </div>
-                     <!-- New option for page numbering -->
+                    <!-- New option for page numbering -->
                     <div class="mt-4 flex items-center">
                         <input type="checkbox" id="text-add-page-numbers" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                         <label for="text-add-page-numbers" id="text-page-numbers-label" class="ml-2 block text-sm text-gray-900">إضافة أرقام الصفحات</label>
@@ -178,11 +226,81 @@
                 <p id="text-status-message" class="mt-4 text-center text-gray-500"></p>
             </div>
 
+            <!-- Scanner Tool -->
+            <div id="scanner-tool-container" class="tool-container">
+                <div class="text-center mb-6">
+                    <p id="scanner-subtitle" class="text-gray-600 mt-2">استخدم كاميرا جهازك لمسح المستندات الورقية ضوئيًا واستخراج النصوص منها لتحويلها إلى PDF.</p>
+                </div>
+
+                <div class="mb-6 video-container relative">
+                    <video id="camera-preview" autoplay playsinline></video>
+                    <p id="camera-status" class="text-white">الرجاء النقر على "افتح الكاميرا"</p>
+                    <div id="ocr-overlay" class="absolute inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center hidden">
+                        <div class="text-white text-lg font-bold">يتم استخراج النص...</div>
+                    </div>
+                </div>
+
+                <div class="flex justify-center space-x-4 space-x-reverse mb-6">
+                    <button id="open-camera-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 shadow-md">
+                        افتح الكاميرا
+                    </button>
+                    <button id="capture-image-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 shadow-md hidden">
+                        التقط صورة
+                    </button>
+                </div>
+
+                <!-- Captured images preview -->
+                <div id="captured-images-container" class="mb-6 h-56 overflow-y-auto border border-gray-300 rounded-md p-4">
+                    <h3 id="captured-images-title" class="text-lg font-semibold text-gray-700 mb-2 sticky top-0 bg-white z-10">الصور الملتقطة:</h3>
+                    <div id="captured-images-preview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        <!-- Captured images will be added here dynamically -->
+                    </div>
+                    <p id="captured-status-message" class="mt-4 text-center text-gray-500">لم يتم التقاط أي صور.</p>
+                </div>
+
+                <!-- PDF Options for Scanner (same as image tool) -->
+                <div class="mb-6">
+                    <h3 id="scanner-options-title" class="text-lg font-semibold text-gray-700 mb-2">خيارات PDF</h3>
+                    <div class="flex flex-col sm:flex-row sm:space-x-4 sm:space-x-reverse space-y-4 sm:space-y-0">
+                        <div>
+                            <label for="scanner-page-format" id="scanner-format-label" class="block text-sm font-medium text-gray-700">حجم الصفحة</label>
+                            <select id="scanner-page-format" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="a4">A4</option>
+                                <option value="letter">Letter</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="scanner-page-orientation" id="scanner-orientation-label" class="block text-sm font-medium text-gray-700">اتجاه الصفحة</label>
+                            <select id="scanner-page-orientation" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="portrait" id="scanner-portrait-option">عمودي</option>
+                                <option value="landscape" id="scanner-landscape-option">أفقي</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- New option for OCR vs Image-based PDF -->
+                    <div class="mt-4 flex items-center">
+                        <input type="checkbox" id="scanner-ocr-mode" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="scanner-ocr-mode" id="scanner-ocr-mode-label" class="ml-2 block text-sm text-gray-900">استخراج النص (OCR) فقط</label>
+                    </div>
+                     <!-- New option for page numbering -->
+                    <div class="mt-4 flex items-center">
+                        <input type="checkbox" id="scanner-add-page-numbers" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="scanner-add-page-numbers" id="scanner-page-numbers-label" class="ml-2 block text-sm text-gray-900">إضافة أرقام الصفحات</label>
+                    </div>
+                </div>
+
+                <button id="scanner-convert-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md">
+                    تحويل إلى PDF
+                </button>
+                <p id="scanner-status-message" class="mt-4 text-center text-gray-500"></p>
+            </div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src='https://unpkg.com/tesseract.js@2.1.0/dist/tesseract.min.js'></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const menuBtn = document.getElementById('menu-btn');
@@ -191,9 +309,12 @@
             
             const showImageToolBtn = document.getElementById('show-image-tool-btn');
             const showTextToolBtn = document.getElementById('show-text-tool-btn');
+            const showScannerToolBtn = document.getElementById('show-scanner-tool-btn');
             const imageToolContainer = document.getElementById('image-tool-container');
             const textToolContainer = document.getElementById('text-tool-container');
+            const scannerToolContainer = document.getElementById('scanner-tool-container');
             const toolSelectorContainer = document.getElementById('tool-selector-container');
+            const ocrOverlay = document.getElementById('ocr-overlay');
 
             // Select all elements that need translation
             const elements = {
@@ -205,6 +326,7 @@
                 langLabel: document.getElementById('lang-label'),
                 showImageToolBtn: showImageToolBtn,
                 showTextToolBtn: showTextToolBtn,
+                showScannerToolBtn: showScannerToolBtn,
                 // Image tool elements
                 imageSubtitle: document.getElementById('image-subtitle'),
                 uploadLabel: document.getElementById('upload-label'),
@@ -226,6 +348,21 @@
                 textLandscapeOption: document.getElementById('text-landscape-option'),
                 textConvertBtn: document.getElementById('text-convert-btn'),
                 textPageNumbersLabel: document.getElementById('text-page-numbers-label'),
+                // Scanner tool elements
+                scannerSubtitle: document.getElementById('scanner-subtitle'),
+                openCameraBtn: document.getElementById('open-camera-btn'),
+                captureImageBtn: document.getElementById('capture-image-btn'),
+                cameraStatus: document.getElementById('camera-status'),
+                capturedImagesTitle: document.getElementById('captured-images-title'),
+                capturedStatusMessage: document.getElementById('captured-status-message'),
+                scannerOptionsTitle: document.getElementById('scanner-options-title'),
+                scannerFormatLabel: document.getElementById('scanner-format-label'),
+                scannerOrientationLabel: document.getElementById('scanner-orientation-label'),
+                scannerPortraitOption: document.getElementById('scanner-portrait-option'),
+                scannerLandscapeOption: document.getElementById('scanner-landscape-option'),
+                scannerConvertBtn: document.getElementById('scanner-convert-btn'),
+                scannerPageNumbersLabel: document.getElementById('scanner-page-numbers-label'),
+                scannerOcrModeLabel: document.getElementById('scanner-ocr-mode-label')
             };
 
             // Translation content
@@ -233,7 +370,7 @@
                 ar: {
                     direction: 'rtl',
                     fontFamily: 'Cairo',
-                    toolSelectorClass: 'space-x-16 space-x-reverse',
+                    toolSelectorClass: 'space-x-8 space-x-reverse',
                     title: 'محول الصور والنصوص إلى PDF',
                     menuTitle: 'القائمة الرئيسية',
                     homeLink: 'الصفحة الرئيسية',
@@ -242,6 +379,7 @@
                     langLabel: 'تغيير اللغة',
                     showImageToolBtn: 'تحويل صور',
                     showTextToolBtn: 'تحويل نص',
+                    showScannerToolBtn: 'مسح ضوئي',
                     // Image tool
                     imageSubtitle: 'اختر صورك (JPG, PNG) لتحويلها إلى مستند PDF واحد.',
                     uploadLabel: 'اختر الصور',
@@ -272,13 +410,32 @@
                     textPageNumbersLabel: 'إضافة أرقام الصفحات',
                     textNoTextMessage: 'الرجاء إدخال بعض النص لتحويله.',
                     textConvertingMessage: 'يتم التحويل... الرجاء الانتظار.',
-                    textConversionSuccessMessage: 'تم التحويل بنجاح! يتم تنزيل ملف PDF.'
+                    textConversionSuccessMessage: 'تم التحويل بنجاح! يتم تنزيل ملف PDF.',
+                    // Scanner tool
+                    scannerSubtitle: 'استخدم كاميرا جهازك لمسح المستندات الورقية ضوئيًا واستخراج النصوص منها لتحويلها إلى PDF.',
+                    openCameraBtn: 'افتح الكاميرا',
+                    captureImageBtn: 'التقط صورة',
+                    cameraStatus: 'الرجاء النقر على "افتح الكاميرا"',
+                    capturedImagesTitle: 'الصور الملتقطة:',
+                    capturedStatusMessage: 'لم يتم التقاط أي صور.',
+                    scannerOptionsTitle: 'خيارات PDF',
+                    scannerFormatLabel: 'حجم الصفحة',
+                    scannerOrientationLabel: 'اتجاه الصفحة',
+                    scannerPortraitOption: 'عمودي',
+                    scannerLandscapeOption: 'أفقي',
+                    scannerConvertBtn: 'تحويل إلى PDF',
+                    scannerOcrModeLabel: 'استخراج النص (OCR) فقط',
+                    scannerPageNumbersLabel: 'إضافة أرقام الصفحات',
+                    scannerNoImagesMessage: 'لم يتم التقاط أي صور.',
+                    scannerConvertingMessage: 'يتم التحويل... الرجاء الانتظار.',
+                    scannerOcrConvertingMessage: 'يتم استخراج النصوص وتحويلها إلى PDF... الرجاء الانتظار.',
+                    scannerConversionSuccessMessage: 'تم التحويل بنجاح! يتم تنزيل ملف PDF.',
                 },
                 en: {
                     direction: 'ltr',
                     fontFamily: 'Inter',
-                    toolSelectorClass: 'space-x-16',
-                    title: 'Image & Text to PDF Converter',
+                    toolSelectorClass: 'space-x-8',
+                    title: 'Image and Text to PDF Converter',
                     menuTitle: 'Main Menu',
                     homeLink: 'Home',
                     aboutLink: 'Privacy Policy',
@@ -286,9 +443,10 @@
                     langLabel: 'Change Language',
                     showImageToolBtn: 'Convert Images',
                     showTextToolBtn: 'Convert Text',
+                    showScannerToolBtn: 'Document Scanner',
                     // Image tool
                     imageSubtitle: 'Select your images (JPG, PNG) to convert them into a single PDF document.',
-                    uploadLabel: 'Choose Images',
+                    uploadLabel: 'Select Images',
                     imagePreviewTitle: 'Image Preview:',
                     imageStatusMessage: 'No images selected.',
                     imageOptionsTitle: 'PDF Options',
@@ -300,12 +458,12 @@
                     imagePageNumbersLabel: 'Add Page Numbers',
                     imageNoImagesMessage: 'No images selected.',
                     imageNoSupportedImagesMessage: 'No supported images (JPG, PNG) were selected.',
-                    imagesSelectedMessage: (count) => `${count} image(s) selected.`,
+                    imagesSelectedMessage: (count) => `${count} images selected.`,
                     imagePleaseSelectImageMessage: 'Please select at least one image to convert.',
                     imageConvertingMessage: 'Converting... Please wait.',
-                    imageConversionSuccessMessage: 'Conversion successful! Downloading PDF file.',
+                    imageConversionSuccessMessage: 'Conversion successful! PDF is downloading.',
                     // Text tool
-                    textSubtitle: 'Type your text here to convert it into a PDF document.',
+                    textSubtitle: 'Write your text here to convert it to a PDF document.',
                     textLabel: 'Enter Text',
                     textOptionsTitle: 'PDF Options',
                     textFormatLabel: 'Page Size',
@@ -316,13 +474,58 @@
                     textPageNumbersLabel: 'Add Page Numbers',
                     textNoTextMessage: 'Please enter some text to convert.',
                     textConvertingMessage: 'Converting... Please wait.',
-                    textConversionSuccessMessage: 'Conversion successful! Downloading PDF file.'
+                    textConversionSuccessMessage: 'Conversion successful! PDF is downloading.',
+                    // Scanner tool
+                    scannerSubtitle: 'Use your device\'s camera to scan documents and extract text to convert to a PDF file.',
+                    openCameraBtn: 'Open Camera',
+                    captureImageBtn: 'Capture Image',
+                    cameraStatus: 'Please click "Open Camera"',
+                    capturedImagesTitle: 'Captured Images:',
+                    capturedStatusMessage: 'No images captured.',
+                    scannerOptionsTitle: 'PDF Options',
+                    scannerFormatLabel: 'Page Size',
+                    scannerOrientationLabel: 'Page Orientation',
+                    scannerPortraitOption: 'Portrait',
+                    scannerLandscapeOption: 'Landscape',
+                    scannerConvertBtn: 'Convert to PDF',
+                    scannerOcrModeLabel: 'Extract Text (OCR) Only',
+                    scannerPageNumbersLabel: 'Add Page Numbers',
+                    scannerNoImagesMessage: 'No images captured.',
+                    scannerConvertingMessage: 'Converting... Please wait.',
+                    scannerOcrConvertingMessage: 'Extracting text and converting to PDF... Please wait.',
+                    scannerConversionSuccessMessage: 'Conversion successful! PDF is downloading.',
                 }
             };
 
             let currentLang = 'ar';
             const imageStatusMessageElement = document.getElementById('image-status-message');
             const textStatusMessageElement = document.getElementById('text-status-message');
+            const scannerStatusMessageElement = document.getElementById('scanner-status-message');
+            const scannerOcrMode = document.getElementById('scanner-ocr-mode');
+
+            // More robust RTL text reversal for jspdf workaround
+            const reverseRtlText = (text) => {
+                const words = text.split(/\s+/);
+                const isRtl = (str) => /[\u0600-\u06FF]/.test(str);
+                let reversedLine = [];
+                let currentSegment = [];
+
+                for (const word of words) {
+                    if (isRtl(word)) {
+                        currentSegment.push(word);
+                    } else {
+                        if (currentSegment.length > 0) {
+                            reversedLine = reversedLine.concat(currentSegment.reverse());
+                            currentSegment = [];
+                        }
+                        reversedLine.push(word);
+                    }
+                }
+                if (currentSegment.length > 0) {
+                    reversedLine = reversedLine.concat(currentSegment.reverse());
+                }
+                return reversedLine.join(' ');
+            };
 
             const updateText = (lang) => {
                 document.documentElement.lang = lang;
@@ -335,7 +538,7 @@
                 for (const key in elements) {
                     if (elements[key]) {
                         if (translations[lang][key]) {
-                             // Check if it's a label with a checkbox
+                            // Check if it's a label with a checkbox
                             if (elements[key].tagName === 'LABEL' && elements[key].htmlFor.includes('add-page-numbers')) {
                                 elements[key].textContent = translations[lang][key];
                                 if (lang === 'en') {
@@ -355,12 +558,25 @@
                 // Update status messages explicitly
                 imageStatusMessageElement.textContent = translations[lang].imageNoImagesMessage;
                 textStatusMessageElement.textContent = '';
+                scannerStatusMessageElement.textContent = '';
                 
                 // Update select options text
                 document.getElementById('image-portrait-option').textContent = translations[lang].imagePortraitOption;
                 document.getElementById('image-landscape-option').textContent = translations[lang].imageLandscapeOption;
                 document.getElementById('text-portrait-option').textContent = translations[lang].textPortraitOption;
                 document.getElementById('text-landscape-option').textContent = translations[lang].textLandscapeOption;
+                document.getElementById('scanner-portrait-option').textContent = translations[lang].scannerPortraitOption;
+                document.getElementById('scanner-landscape-option').textContent = translations[lang].scannerLandscapeOption;
+
+                // Update OCR label with correct margin
+                const ocrLabel = document.getElementById('scanner-ocr-mode-label');
+                if (lang === 'en') {
+                    ocrLabel.classList.remove('ml-2');
+                    ocrLabel.classList.add('mr-2');
+                } else {
+                    ocrLabel.classList.remove('mr-2');
+                    ocrLabel.classList.add('ml-2');
+                }
             };
 
             // Toggle side menu visibility
@@ -376,26 +592,33 @@
                 sideMenu.classList.add('translate-x-full');
                 menuBtn.classList.remove('active');
             });
-
+            
             // Tool switching logic
-            showImageToolBtn.addEventListener('click', () => {
-                imageToolContainer.classList.remove('hidden');
-                textToolContainer.classList.add('hidden');
-                showImageToolBtn.classList.remove('bg-gray-300', 'text-gray-800');
-                showImageToolBtn.classList.add('bg-blue-600', 'text-white');
-                showTextToolBtn.classList.remove('bg-blue-600', 'text-white');
-                showTextToolBtn.classList.add('bg-gray-300', 'text-gray-800');
-            });
+            const allToolContainers = [imageToolContainer, textToolContainer, scannerToolContainer];
+            const allToolBtns = [showImageToolBtn, showTextToolBtn, showScannerToolBtn];
 
-            showTextToolBtn.addEventListener('click', () => {
-                textToolContainer.classList.remove('hidden');
-                imageToolContainer.classList.add('hidden');
-                showTextToolBtn.classList.remove('bg-gray-300', 'text-gray-800');
-                showTextToolBtn.classList.add('bg-blue-600', 'text-white');
-                showImageToolBtn.classList.remove('bg-blue-600', 'text-white');
-                showImageToolBtn.classList.add('bg-gray-300', 'text-gray-800');
+            const switchTool = (activeContainer, activeBtn) => {
+                allToolContainers.forEach(container => container.classList.remove('active'));
+                allToolBtns.forEach(btn => btn.classList.remove('bg-blue-600', 'text-white'));
+                allToolBtns.forEach(btn => btn.classList.add('bg-gray-300', 'text-gray-800'));
+                
+                activeContainer.classList.add('active');
+                activeBtn.classList.remove('bg-gray-300', 'text-gray-800');
+                activeBtn.classList.add('bg-blue-600', 'text-white');
+            };
+
+            showImageToolBtn.addEventListener('click', () => {
+                switchTool(imageToolContainer, showImageToolBtn);
             });
             
+            showTextToolBtn.addEventListener('click', () => {
+                switchTool(textToolContainer, showTextToolBtn);
+            });
+
+            showScannerToolBtn.addEventListener('click', () => {
+                switchTool(scannerToolContainer, showScannerToolBtn);
+            });
+
             // Image to PDF Logic
             const imageUpload = document.getElementById('image-upload');
             const imageConvertBtn = document.getElementById('image-convert-btn');
@@ -531,12 +754,11 @@
                 const pageHeight = doc.internal.pageSize.getHeight();
                 const margin = 20; // in mm
                 const availableWidth = pageWidth - 2 * margin;
-                const availableHeight = pageHeight - 2 * margin;
-                
-                doc.setFont('Cairo'); // Or a font that supports Arabic
-                doc.setFontSize(12);
 
-                const lines = doc.splitTextToSize(text, availableWidth);
+                // Apply the RTL reversal for the text
+                const rtlText = reverseRtlText(text);
+                const lines = doc.splitTextToSize(rtlText, availableWidth);
+                
                 let currentY = margin;
                 
                 for (let i = 0; i < lines.length; i++) {
@@ -547,7 +769,7 @@
                         currentY = margin;
                     }
                     
-                    doc.text(line, margin, currentY);
+                    doc.text(line, pageWidth - margin, currentY, { align: 'right' });
                     currentY += 5; // Line height
                 }
                 
@@ -565,7 +787,229 @@
                 textStatusMessageElement.textContent = translations[currentLang].textConversionSuccessMessage;
                 textConvertBtn.disabled = false;
             });
+
+            // Scanner to PDF Logic
+            const cameraPreview = document.getElementById('camera-preview');
+            const cameraStatus = document.getElementById('camera-status');
+            const openCameraBtn = document.getElementById('open-camera-btn');
+            const captureImageBtn = document.getElementById('capture-image-btn');
+            const capturedImagesPreview = document.getElementById('captured-images-preview');
+            const capturedStatusMessage = document.getElementById('captured-status-message');
+            const scannerConvertBtn = document.getElementById('scanner-convert-btn');
+            const scannerPageFormat = document.getElementById('scanner-page-format');
+            const scannerPageOrientation = document.getElementById('scanner-page-orientation');
+            const scannerAddPageNumbers = document.getElementById('scanner-add-page-numbers');
             
+            let capturedFiles = [];
+            let mediaStream = null;
+            let ocrWorker = null;
+
+            openCameraBtn.addEventListener('click', async () => {
+                if (mediaStream) {
+                    // Stop previous stream if it exists
+                    mediaStream.getTracks().forEach(track => track.stop());
+                    cameraPreview.srcObject = null;
+                    capturedStatusMessage.textContent = translations[currentLang].capturedStatusMessage;
+                    captureImageBtn.classList.add('hidden');
+                    openCameraBtn.textContent = translations[currentLang].openCameraBtn;
+                    mediaStream = null;
+                    return;
+                }
+
+                try {
+                    cameraStatus.textContent = "يتم الوصول إلى الكاميرا...";
+                    mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                        video: {
+                            facingMode: { exact: "environment" } // Prefer the back camera
+                        }
+                    });
+                    cameraPreview.srcObject = mediaStream;
+                    cameraPreview.play();
+                    cameraStatus.textContent = "";
+                    captureImageBtn.classList.remove('hidden');
+                    openCameraBtn.textContent = "إغلاق الكاميرا";
+
+                } catch (error) {
+                    console.error("Error accessing camera: ", error);
+                    // Fallback to any available camera if 'environment' mode fails
+                    try {
+                        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                        cameraPreview.srcObject = mediaStream;
+                        cameraPreview.play();
+                        cameraStatus.textContent = "";
+                        captureImageBtn.classList.remove('hidden');
+                        openCameraBtn.textContent = "إغلاق الكاميرا";
+                    } catch (e) {
+                        console.error("Error accessing any camera: ", e);
+                        cameraStatus.textContent = "تعذر الوصول إلى الكاميرا. الرجاء التحقق من الأذونات.";
+                    }
+                }
+            });
+
+            captureImageBtn.addEventListener('click', () => {
+                if (!mediaStream) return;
+
+                const canvas = document.createElement('canvas');
+                canvas.width = cameraPreview.videoWidth;
+                canvas.height = cameraPreview.videoHeight;
+                const context = canvas.getContext('2d');
+                context.drawImage(cameraPreview, 0, 0, canvas.width, canvas.height);
+                
+                const imageDataUrl = canvas.toDataURL('image/jpeg');
+                
+                // Convert data URL to a File object
+                const byteString = atob(imageDataUrl.split(',')[1]);
+                const mimeString = imageDataUrl.split(',')[0].split(':')[1].split(';')[0];
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                const file = new File([ab], `scan-${Date.now()}.jpeg`, { type: mimeString });
+
+                capturedFiles.push(file);
+
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'relative group';
+                const img = document.createElement('img');
+                img.src = imageDataUrl;
+                img.className = 'w-full h-auto object-cover rounded-md shadow-md transform transition-transform duration-200 group-hover:scale-105';
+                img.alt = 'Captured image preview';
+                imgContainer.appendChild(img);
+                capturedImagesPreview.appendChild(imgContainer);
+
+                capturedStatusMessage.textContent = translations[currentLang].imagesSelectedMessage(capturedFiles.length);
+            });
+
+            scannerConvertBtn.addEventListener('click', async () => {
+                if (capturedFiles.length === 0) {
+                    scannerStatusMessageElement.textContent = translations[currentLang].scannerNoImagesMessage;
+                    return;
+                }
+
+                scannerConvertBtn.disabled = true;
+                const isOcrMode = scannerOcrMode.checked;
+                
+                if (isOcrMode) {
+                    scannerStatusMessageElement.textContent = translations[currentLang].scannerOcrConvertingMessage;
+                    ocrOverlay.classList.remove('hidden');
+
+                    if (!ocrWorker) {
+                        ocrWorker = Tesseract.createWorker({
+                            logger: m => {
+                                console.log(m);
+                                if (m.status === 'recognizing text') {
+                                    ocrOverlay.querySelector('div').textContent = `${translations[currentLang].scannerOcrConvertingMessage} (${(m.progress * 100).toFixed(0)}%)`;
+                                }
+                            }
+                        });
+                        await ocrWorker.load();
+                        // Load Arabic and French languages for accurate OCR
+                        await ocrWorker.loadLanguage('ara+fra'); 
+                        await ocrWorker.initialize('ara+fra');
+                    }
+
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({
+                        orientation: scannerPageOrientation.value === 'landscape' ? 'l' : 'p',
+                        unit: 'mm',
+                        format: scannerPageFormat.value,
+                    });
+
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
+                    const margin = 20;
+                    const availableWidth = pageWidth - 2 * margin;
+
+                    for (let i = 0; i < capturedFiles.length; i++) {
+                        const file = capturedFiles[i];
+                        const { data: { text } } = await ocrWorker.recognize(file);
+                        
+                        if (i > 0) {
+                            doc.addPage();
+                        }
+                        
+                        // Apply RTL reversal to the extracted text
+                        const rtlText = reverseRtlText(text);
+
+                        // Split text into lines that fit the page
+                        const lines = doc.splitTextToSize(rtlText, availableWidth);
+                        let currentY = margin;
+
+                        for (const line of lines) {
+                            if (currentY + 5 > pageHeight - margin) {
+                                doc.addPage();
+                                currentY = margin;
+                            }
+                            // Always align to the right to handle RTL text correctly
+                            doc.text(line, pageWidth - margin, currentY, { align: 'right' });
+                            currentY += 5;
+                        }
+
+                        if (scannerAddPageNumbers.checked) {
+                            const pageNumber = i + 1;
+                            const totalPages = capturedFiles.length;
+                            doc.setFontSize(10);
+                            doc.text(`${pageNumber}/${totalPages}`, pageWidth - 15, pageHeight - 10, { align: 'right' });
+                        }
+                    }
+
+                    doc.save('scanned-text-document.pdf');
+                    ocrOverlay.classList.add('hidden');
+
+                } else {
+                    // Original behavior: convert images to PDF
+                    scannerStatusMessageElement.textContent = translations[currentLang].scannerConvertingMessage;
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({
+                        orientation: scannerPageOrientation.value === 'landscape' ? 'l' : 'p',
+                        unit: 'mm',
+                        format: scannerPageFormat.value,
+                    });
+
+                    for (let i = 0; i < capturedFiles.length; i++) {
+                        const file = capturedFiles[i];
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+
+                        await new Promise(resolve => {
+                            reader.onload = (e) => {
+                                const imgData = e.target.result;
+                                const img = new Image();
+                                img.onload = () => {
+                                    if (i > 0) {
+                                        doc.addPage();
+                                    }
+                                    const imgWidth = img.width;
+                                    const imgHeight = img.height;
+                                    const pageWidth = doc.internal.pageSize.getWidth();
+                                    const pageHeight = doc.internal.pageSize.getHeight();
+                                    const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+                                    const newWidth = imgWidth * ratio;
+                                    const newHeight = imgHeight * ratio;
+                                    const x = (pageWidth - newWidth) / 2;
+                                    const y = (pageHeight - newHeight) / 2;
+                                    doc.addImage(imgData, 'JPEG', x, y, newWidth, newHeight);
+                                    
+                                    if (scannerAddPageNumbers.checked) {
+                                        const pageNumber = i + 1;
+                                        const totalPages = capturedFiles.length;
+                                        doc.setFontSize(10);
+                                        doc.text(`${pageNumber}/${totalPages}`, pageWidth - 15, pageHeight - 10, { align: 'right' });
+                                    }
+                                    resolve();
+                                };
+                                img.src = imgData;
+                            };
+                        });
+                    }
+                    doc.save('scanned-document.pdf');
+                }
+
+                scannerStatusMessageElement.textContent = translations[currentLang].scannerConversionSuccessMessage;
+                scannerConvertBtn.disabled = false;
+            });
+
             // Initial text update based on the default language
             updateText(currentLang);
         });
