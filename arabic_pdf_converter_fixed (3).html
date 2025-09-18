@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta name="google-site-verification" content="dmumT6I5P7_VVnaVGeqQLMow16Ifc6jmopRrL95R1x0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محول الصور والنصوص إلى PDF</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            padding-top: 64px;
+        }
+        
+        .menu-icon-btn.active .line:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+        .menu-icon-btn.active .line:nth-child(2) {
+            opacity: 0;
+        }
+        .menu-icon-btn.active .line:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
+        .tool-container {
+            display: none;
+        }
+
+        .tool-container.active {
+            display: block;
+        }
+
+        .video-container {
+            width: 100%;
+            height: 300px;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        #camera-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .text-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: bold;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            z-index: 20;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col items-center min-h-screen">
+
+    <!-- Header Section -->
+    <header class="fixed top-0 right-0 left-0 bg-blue-600 shadow-md z-50 p-4 flex items-center justify-between text-white">
+        <button id="menu-btn" class="menu-icon-btn p-2 rounded-full transition-transform duration-300 transform hover:scale-110 focus:outline-none">
+            <div class="line w-6 h-0.5 bg-white my-1 transition-all duration-300"></div>
+            <div class="line w-6 h-0.5 bg-white my-1 transition-all duration-300"></div>
+            <div class="line w-6 h-0.5 bg-white my-1 transition-all duration-300"></div>
+        </button>
+        
+        <h1 id="header-title" class="text-xl font-bold">محول الصور والنصوص إلى PDF</h1>
+        
+        <div class="w-10"></div>
+    </header>
+
+    <!-- Side Menu -->
+    <div id="side-menu" class="fixed top-0 right-0 h-full w-64 bg-white shadow-xl z-40 transform translate-x-full transition-transform duration-300 ease-in-out">
+        <div class="p-8">
+            <h2 id="menu-title" class="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">القائمة الرئيسية</h2>
+            <nav class="space-y-4">
+                <a href="#" id="home-link" class="block text-gray-700 hover:text-blue-600 font-semibold transition-colors duration-200">الصفحة الرئيسية</a>
+                <a href="https://roaring-sprite-ab613f.netlify.app/" id="about-link" class="block text-gray-700 hover:text-blue-600 font-semibold transition-colors duration-200">سياسة الخصوصية</a>
+                <a href="https://www.facebook.com/mohtech.itz" id="contact-link" target="_blank" class="block text-gray-700 hover:text-blue-600 font-semibold transition-colors duration-200">تواصل معنا</a>
+                <div class="mt-4">
+                    <label for="lang-select" class="block text-gray-700 font-semibold mb-2" id="lang-label">تغيير اللغة</label>
+                    <select id="lang-select" class="block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="ar">العربية</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="w-full max-w-2xl mt-8 p-4">
+        <div class="bg-white rounded-lg shadow-xl p-8 w-full">
+            <!-- Tool Selector -->
+            <div class="flex justify-center space-x-8 space-x-reverse mb-6" id="tool-selector-container">
+                <button id="show-image-tool-btn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 hover:bg-blue-700">
+                    تحويل صور
+                </button>
+                <button id="show-text-tool-btn" class="bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 hover:bg-gray-400">
+                    تحويل نص
+                </button>
+                <button id="show-scanner-tool-btn" class="bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 hover:bg-gray-400">
+                    مسح ضوئي
+                </button>
+            </div>
+
+            <!-- Image to PDF Tool -->
+            <div id="image-tool-container" class="tool-container active">
+                <div class="text-center mb-6">
+                    <p id="image-subtitle" class="text-gray-600 mt-2">اختر صورك (JPG, PNG) لتحويلها إلى مستند PDF واحد.</p>
+                </div>
+                <div class="mb-6">
+                    <label for="image-upload" id="upload-label" class="block text-sm font-medium text-gray-700 mb-2">
+                        اختر الصور
+                    </label>
+                    <input type="file" id="image-upload" accept=".jpg, .jpeg, .png" multiple class="block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-blue-50 file:text-blue-700
+                        hover:file:bg-blue-100
+                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                </div>
+                <div id="image-preview-container" class="mb-6 h-56 overflow-y-auto border border-gray-300 rounded-md p-4">
+                    <h3 id="image-preview-title" class="text-lg font-semibold text-gray-700 mb-2 sticky top-0 bg-white z-10">معاينة الصور:</h3>
+                    <div id="image-preview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    </div>
+                    <p id="image-status-message" class="mt-4 text-center text-gray-500"></p>
+                </div>
+                <div class="mb-6">
+                    <h3 id="image-options-title" class="text-lg font-semibold text-gray-700 mb-2">خيارات PDF</h3>
+                    <div class="flex flex-col sm:flex-row sm:space-x-4 sm:space-x-reverse space-y-4 sm:space-y-0">
+                        <div>
+                            <label for="image-page-format" id="image-format-label" class="block text-sm font-medium text-gray-700">حجم الصفحة</label>
+                            <select id="image-page-format" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="a4">A4</option>
+                                <option value="letter">Letter</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="image-page-orientation" id="image-orientation-label" class="block text-sm font-medium text-gray-700">اتجاه الصفحة</label>
+                            <select id="image-page-orientation" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="portrait" id="image-portrait-option">عمودي</option>
+                                <option value="landscape" id="image-landscape-option">أفقي</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center">
+                        <input type="checkbox" id="image-add-page-numbers" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="image-add-page-numbers" id="image-page-numbers-label" class="ml-2 block text-sm text-gray-900">إضافة أرقام الصفحات</label>
+                    </div>
+                </div>
+                <button id="image-convert-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md">
+                    تحويل إلى PDF
+                </button>
+            </div>
+
+            <!-- Text to PDF Tool -->
+            <div id="text-tool-container" class="tool-container">
+                <div class="text-center mb-6">
+                    <p id="text-subtitle" class="text-gray-600 mt-2">اكتب النص الخاص بك هنا لتحويله إلى مستند PDF.</p>
+                </div>
+                <div class="mb-6">
+                    <label for="text-input" id="text-label" class="block text-sm font-medium text-gray-700 mb-2">
+                        أدخل النص
+                    </label>
+                    <textarea id="text-input" class="w-full p-3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" rows="10" dir="rtl"></textarea>
+                </div>
+                <div class="mb-6">
+                    <h3 id="text-options-title" class="text-lg font-semibold text-gray-700 mb-2">خيارات PDF</h3>
+                    <div class="flex flex-col sm:flex-row sm:space-x-4 sm:space-x-reverse space-y-4 sm:space-y-0">
+                        <div>
+                            <label for="text-page-format" id="text-format-label" class="block text-sm font-medium text-gray-700">حجم الصفحة</label>
+                            <select id="text-page-format" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="a4">A4</option>
+                                <option value="letter">Letter</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="text-page-orientation" id="text-orientation-label" class="block text-sm font-medium text-gray-700">اتجاه الصفحة</label>
+                            <select id="text-page-orientation" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="portrait" id="text-portrait-option">عمودي</option>
+                                <option value="landscape" id="text-landscape-option">أفقي</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center">
+                        <input type="checkbox" id="text-add-page-numbers" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="text-add-page-numbers" id="text-page-numbers-label" class="ml-2 block text-sm text-gray-900">إضافة أرقام الصفحات</label>
+                    </div>
+                </div>
+                <button id="text-convert-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md">
+                    تحويل إلى PDF
+                </button>
+                <p id="text-status-message" class="mt-4 text-center text-gray-500"></p>
+            </div>
+
+            <!-- Scanner Tool -->
+            <div id="scanner-tool-container" class="tool-container">
+                <div class="text-center mb-6">
+                    <p id="scanner-subtitle" class="text-gray-600 mt-2">استخدم كاميرا جهازك لمسح المستندات الورقية ضوئيًا واستخراج النصوص منها لتحويلها إلى PDF.</p>
+                </div>
+
+                <div class="mb-6 video-container relative">
+                    <video id="camera-preview" autoplay playsinline></video>
+                    <p id="camera-status" class="text-white">الرجاء النقر على "افتح الكاميرا"</p>
+                    <div id="ocr-overlay" class="absolute inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center hidden">
+                        <div class="text-white text-lg font-bold">يتم استخراج النص...</div>
+                    </div>
+                </div>
+
+                <div class="flex justify-center space-x-4 space-x-reverse mb-6">
+                    <button id="open-camera-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 shadow-md">
+                        افتح الكاميرا
+                    </button>
+                    <button id="capture-image-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 shadow-md hidden">
+                        التقط صورة
+                    </button>
+                </div>
+
+                <div id="captured-images-container" class="mb-6 h-56 overflow-y-auto border border-gray-300 rounded-md p-4">
+                    <h3 id="captured-images-title" class="text-lg font-semibold text-gray-700 mb-2 sticky top-0 bg-white z-10">الصور الملتقطة:</h3>
+                    <div id="captured-images-preview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    </div>
+                    <p id="captured-status-message" class="mt-4 text-center text-gray-500">لم يتم التقاط أي صور.</p>
+                </div>
+
+                <div class="mb-6">
+                    <h3 id="scanner-options-title" class="text-lg font-semibold text-gray-700 mb-2">خيارات PDF</h3>
+                    <div class="flex flex-col sm:flex-row sm:space-x-4 sm:space-x-reverse space-y-4 sm:space-y-0">
+                        <div>
+                            <label for="scanner-page-format" id="scanner-format-label" class="block text-sm font-medium text-gray-700">حجم الصفحة</label>
+                            <select id="scanner-page-format" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="a4">A4</option>
+                                <option value="letter">Letter</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="scanner-page-orientation" id="scanner-orientation-label" class="block text-sm font-medium text-gray-700">اتجاه الصفحة</label>
+                            <select id="scanner-page-orientation" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="portrait" id="scanner-portrait-option">عمودي</option>
+                                <option value="landscape" id="scanner-landscape-option">أفقي</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center">
+                        <input type="checkbox" id="scanner-ocr-mode" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="scanner-ocr-mode" id="scanner-ocr-mode-label" class="ml-2 block text-sm text-gray-900">استخراج النص (OCR) فقط</label>
+                    </div>
+                     <div class="mt-4 flex items-center">
+                        <input type="checkbox" id="scanner-add-page-numbers" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="scanner-add-page-numbers" id="scanner-page-numbers-label" class="ml-2 block text-sm text-gray-900">إضافة أرقام الصفحات</label>
+                    </div>
+                </div>
+
+                <button id="scanner-convert-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md">
+                    تحويل إلى PDF
+                </button>
+                <p id="scanner-status-message" class="mt-4 text-center text-gray-500"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src='https://unpkg.com/tesseract.js@2.1.0/dist/tesseract.min.js'></script>
+    <!-- Add Arabic font support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.plugin.autotable.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuBtn = document.getElementById('menu-btn');
+            const sideMenu = document.getElementById('side-menu');
+            const langSelect = document.getElementById('lang-select');
+            
+            const showImageToolBtn = document.getElementById('show-image-tool-btn');
+            const showTextToolBtn = document.getElementById('show-text-tool-btn');
+            const showScannerToolBtn = document.getElementById('show-scanner-tool-btn');
+            const imageToolContainer = document.getElementById('image-tool-container');
+            const textToolContainer = document.getElementById('text-tool-container');
+            const scannerToolContainer = document.getElementById('scanner-tool-container');
+            const toolSelectorContainer = document.getElementById('tool-selector-container');
+            const ocrOverlay = document.getElementById('ocr-overlay');
+
+            const elements = {
+                headerTitle: document.getElementById('header-title'),
+                menuTitle: document.getElementById('menu-title'),
+                homeLink: document.getElementById('home-link'),
+                aboutLink: document.getElementById('about-link'),
+                contactLink: document.getElementById('contact-link'),
+                langLabel: document.getElementById('lang-label'),
+                showImageToolBtn: showImageToolBtn,
+                showTextToolBtn: showTextToolBtn,
+                showScannerToolBtn: showScannerToolBtn,
+                // Image tool elements
+                imageSubtitle: document.getElementById('image-subtitle'),
+                uploadLabel: document.getElementById('upload-label'),
+                imagePreviewTitle: document.getElementById('image-preview-title'),
+                imageOptionsTitle: document.getElementById('image-options-title'),
+                imageFormatLabel: document.getElementById('image-format-label'),
+                imageOrientationLabel: document.getElementById('image-orientation-label'),
+                imagePortraitOption: document.getElementById('image-portrait-option'),
+                imageLandscapeOption: document.getElementById('image-landscape-option'),
+                imageConvertBtn: document.getElementById('image-convert-btn'),
+                imagePageNumbersLabel: document.getElementById('image-page-numbers-label'),
+                // Text tool elements
+                textSubtitle: document.getElementById('text-subtitle'),
+                textLabel: document.getElementById('text-label'),
+                textOptionsTitle: document.getElementById('text-options-title'),
+                textFormatLabel: document.getElementById('text-format-label'),
+                textOrientationLabel: document.getElementById('text-orientation-label'),
+                textPortraitOption: document.getElementById('text-portrait-option'),
+                textLandscapeOption: document.getElementById('text-landscape-option'),
+                textConvertBtn: document.getElementById('text-convert-btn'),
+                textPageNumbersLabel: document.getElementById('text-page-numbers-label'),
+                // Scanner tool elements
+                scannerSubtitle: document.getElementById('scanner-subtitle'),
+                openCameraBtn: document.getElementById('open-camera-btn'),
+                captureImageBtn: document.getElementById('capture-image-btn'),
+                cameraStatus: document.getElementById('camera-status'),
+                capturedImagesTitle: document.getElementById('captured-images-title'),
+                capturedStatusMessage: document.getElementById('captured-status-message'),
+                scannerOptionsTitle: document.getElementById('scanner-options-title'),
+                scannerFormatLabel: document.getElementById('scanner-format-label'),
+                scannerOrientationLabel: document.getElementById('scanner-orientation-label'),
+                scannerPortraitOption: document.getElementById('scanner-portrait-option'),
+                scannerLandscapeOption: document.getElementById('scanner-landscape-option'),
+                scannerConvertBtn: document.getElementById('scanner-convert-btn'),
+                scannerPageNumbersLabel: document.getElementById('scanner-page-numbers-label'),
+                scannerOcrModeLabel: document.getElementById('scanner-ocr-mode-label')
+            };
+
+            const translations = {
+                ar: {
+                    direction: 'rtl',
+                    fontFamily: 'Cairo',
+                    toolSelectorClass: 'space-x-8 space-x-reverse',
+                    title: 'محول الصور والنصوص إلى PDF',
+                    menuTitle: 'القائمة الرئيسية',
+                    homeLink: 'الصفحة الرئيسية',
+                    aboutLink: 'سياسة الخصوصية',
+                    contactLink: 'تواصل معنا',
+                    langLabel: 'تغيير اللغة',
+                    showImageToolBtn: 'تحويل صور',
+                    showTextToolBtn: 'تحويل نص',
+                    showScannerToolBtn: 'مسح ضوئي',
+                    // Image tool
+                    imageSubtitle: 'اختر صورك (JPG, PNG) لتحويلها إلى مستند PDF واحد.',
+                    uploadLabel: 'اختر الصور',
+                    imagePreviewTitle: 'معاينة الصور:',
+                    imageStatusMessage: 'لم يتم اختيار أي صور.',
+                    imageOptionsTitle: 'خيارات PDF',
+                    imageFormatLabel: 'حجم الصفحة',
+                    imageOrientationLabel: 'اتجاه الصفحة',
+                    imagePortraitOption: 'عمودي',
+                    imageLandscapeOption: 'أفقي',
+                    imageConvertBtn: 'تحويل إلى PDF',
+                    imagePageNumbersLabel: 'إضافة أرقام الصفحات',
+                    imageNoImagesMessage: 'لم يتم اختيار أي صور.',
+                    imageNoSupportedImagesMessage: 'لم يتم اختيار أي صور مدعومة (JPG, PNG).',
+                    imagesSelectedMessage: (count) => `تم اختيار ${count} صورة.`,
+                    imagePleaseSelectImageMessage: 'الرجاء اختيار صورة واحدة على الأقل لتحويلها.',
+                    imageConvertingMessage: 'يتم التحويل... الرجاء الانتظار.',
+                    imageConversionSuccessMessage: 'تم التحويل بنجاح! يتم تنزيل ملف PDF.',
+                    // Text tool
+                    textSubtitle: 'اكتب النص الخاص بك هنا لتحويله إلى مستند PDF.',
+                    textLabel: 'أدخل النص',
+                    textOptionsTitle: 'خيارات PDF',
+                    textFormatLabel: 'حجم الصفحة',
+                    textOrientationLabel: 'اتجاه الصفحة',
+                    textPortraitOption: 'عمودي',
+                    textLandscapeOption: 'أفقي',
+                    textConvertBtn: 'تحويل إلى PDF',
+                    textPageNumbersLabel: 'إضافة أرقام الصفحات',
+                    textNoTextMessage: 'الرجاء إدخال بعض النص لتحويله.',
+                    textConvertingMessage: 'يتم التحويل... الرجاء الانتظار.',
+                    textConversionSuccessMessage: 'تم التحويل بنجاح! يتم تنزيل ملف PDF.',
+                    // Scanner tool
+                    scannerSubtitle: 'استخدم كاميرا جهازك لمسح المستندات الورقية ضوئيًا واستخراج النصوص منها لتحويلها إلى PDF.',
+                    openCameraBtn: 'افتح الكاميرا',
+                    captureImageBtn: 'التقط صورة',
+                    cameraStatus: 'الرجاء النقر على "افتح الكاميرا"',
+                    capturedImagesTitle: 'الصور الملتقطة:',
+                    capturedStatusMessage: 'لم يتم التقاط أي صور.',
+                    scannerOptionsTitle: 'خيارات PDF',
+                    scannerFormatLabel: 'حجم الصفحة',
+                    scannerOrientationLabel: 'اتجاه الصفحة',
+                    scannerPortraitOption: 'عمودي',
+                    scannerLandscapeOption: 'أفقي',
+                    scannerConvertBtn: 'تحويل إلى PDF',
+                    scannerOcrModeLabel: 'استخراج النص (OCR) فقط',
+                    scannerPageNumbersLabel: 'إضافة أرقام الصفحات',
+                    scannerNoImagesMessage: 'لم يتم التقاط أي صور.',
+                    scannerConvertingMessage: 'يتم التحويل... الرجاء الانتظار.',
+                    scannerOcrConvertingMessage: 'يتم استخراج النصوص وتحويلها إلى PDF... الرجاء الانتظار.',
+                    scannerConversionSuccessMessage: 'تم التحويل بنجاح! يتم تنزيل ملف PDF.',
+                },
+                en: {
+                    direction: 'ltr',
+                    fontFamily: 'Inter',
+                    toolSelectorClass: 'space-x-8',
+                    title: 'Image and Text to PDF Converter',
+                    menuTitle: 'Main Menu',
+                    homeLink: 'Home',
+                    aboutLink: 'Privacy Policy',
+                    contactLink: 'Contact Us',
+                    langLabel: 'Change Language',
+                    showImageToolBtn: 'Convert Images',
+                    showTextToolBtn: 'Convert Text',
+                    showScannerToolBtn: 'Document Scanner',
+                    // Image tool
+                    imageSubtitle: 'Select your images (JPG, PNG) to convert them into a single PDF document.',
+                    uploadLabel: 'Select Images',
+                    imagePreviewTitle: 'Image Preview:',
+                    imageStatusMessage: 'No images selected.',
+                    imageOptionsTitle: 'PDF Options',
+                    imageFormatLabel: 'Page Size',
+                    imageOrientationLabel: 'Page Orientation',
+                    imagePortraitOption: 'Portrait',
+                    imageLandscapeOption: 'Landscape',
+                    imageConvertBtn: 'Convert to PDF',
+                    imagePageNumbersLabel: 'Add Page Numbers',
+                    imageNoImagesMessage: 'No images selected.',
+                    imageNoSupportedImagesMessage: 'No supported images (JPG, PNG) were selected.',
+                    imagesSelectedMessage: (count) => `${count} images selected.`,
+                    imagePleaseSelectImageMessage: 'Please select at least one image to convert.',
+                    imageConvertingMessage: 'Converting... Please wait.',
+                    imageConversionSuccessMessage: 'Conversion successful! PDF is downloading.',
+                    // Text tool
+                    textSubtitle: 'Write your text here to convert it to a PDF document.',
+                    textLabel: 'Enter Text',
+                    textOptionsTitle: 'PDF Options',
+                    textFormatLabel: 'Page Size',
+                    textOrientationLabel: 'Page Orientation',
+                    textPortraitOption: 'Portrait',
+                    textLandscapeOption: 'Landscape',
+                    textConvertBtn: 'Convert to PDF',
+                    textPageNumbersLabel: 'Add Page Numbers',
+                    textNoTextMessage: 'Please enter some text to convert.',
+                    textConvertingMessage: 'Converting... Please wait.',
+                    textConversionSuccessMessage: 'Conversion successful! PDF is downloading.',
+                    // Scanner tool
+                    scannerSubtitle: 'Use your device\'s camera to scan documents and extract text to convert to a PDF file.',
+                    openCameraBtn: 'Open Camera',
+                    captureImageBtn: 'Capture Image',
+                    cameraStatus: 'Please click "Open Camera"',
+                    capturedImagesTitle: 'Captured Images:',
+                    capturedStatusMessage: 'No images captured.',
+                    scannerOptionsTitle: 'PDF Options',
+                    scannerFormatLabel: 'Page Size',
+                    scannerOrientationLabel: 'Page Orientation',
+                    scannerPortraitOption: 'Portrait',
+                    scannerLandscapeOption: 'Landscape',
+                    scannerConvertBtn: 'Convert to PDF',
+                    scannerOcrModeLabel: 'Extract Text (OCR) Only',
+                    scannerPageNumbersLabel: 'Add Page Numbers',
+                    scannerNoImagesMessage: 'No images captured.',
+                    scannerConvertingMessage: 'Converting... Please wait.',
+                    scannerOcrConvertingMessage: 'Extracting text and converting to PDF... Please wait.',
+                    scannerConversionSuccessMessage: 'Conversion successful! PDF is downloading.',
+                }
+            };
+
+            let currentLang = 'ar';
+            const imageStatusMessageElement = document.getElementById('image-status-message');
+            const textStatusMessageElement = document.getElementById('text-status-message');
+            const scannerStatusMessageElement = document.getElementById('scanner-status-message');
+            const scannerOcrMode = document.getElementById('scanner-ocr-mode');
+
+            // Improved Arabic text handling using canvas-based approach
+            const createTextAsPDF = async (text, options = {}) => {
+                const {
+                    pageFormat = 'a4',
+                    orientation = 'portrait',
+                    addPageNumbers = false,
+                    fontSize = 16,
+                    lineHeight = 24
+                } = options;
+                
+                const isArabic = /[\u0600-\u06FF]/.test(text);
+                
+                // Create a temporary canvas to render text properly
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Set canvas size based on PDF page format
+                const pageWidth = pageFormat === 'a4' ? 595 : 612; // points
+                const pageHeight = pageFormat === 'a4' ? 842 : 792; // points
+                
+                canvas.width = pageWidth;
+                canvas.height = pageHeight;
+                
+                // Configure canvas for high quality text rendering
+                ctx.textAlign = isArabic ? 'right' : 'left';
+                ctx.textBaseline = 'top';
+                ctx.font = `${fontSize}px ${isArabic ? 'Cairo, Arial' : 'Arial'}`;
+                ctx.fillStyle = '#000000';
+                
+                // Clear canvas with white background
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#000000';
+                
+                const margin = 40;
+                const availableWidth = canvas.width - (2 * margin);
+                const maxCharsPerLine = Math.floor(availableWidth / (fontSize * 0.6));
+                
+                // Split text by newlines and preserve original spacing
+                const textLines = text.split('\n');
+                const lines = [];
+                
+                textLines.forEach((textLine) => {
+                    // Handle empty lines exactly as they appear in original text
+                    if (textLine.trim() === '') {
+                        lines.push('');
+                        return;
+                    }
+                    
+                    // Split line into words and wrap based on canvas width
+                    const words = textLine.trim().split(/\s+/);
+                    let currentLine = '';
+                    
+                    words.forEach((word) => {
+                        const testLine = currentLine + (currentLine ? ' ' : '') + word;
+                        const metrics = ctx.measureText(testLine);
+                        
+                        if (metrics.width <= availableWidth) {
+                            currentLine = testLine;
+                        } else {
+                            if (currentLine) {
+                                lines.push(currentLine);
+                            }
+                            currentLine = word;
+                        }
+                    });
+                    
+                    if (currentLine) {
+                        lines.push(currentLine);
+                    }
+                });
+                
+                // Calculate pages needed (treat all lines equally)
+                const linesPerPage = Math.floor((canvas.height - (2 * margin)) / lineHeight);
+                const totalPages = Math.ceil(lines.length / linesPerPage);
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: orientation === 'landscape' ? 'l' : 'p',
+                    unit: 'pt',
+                    format: pageFormat.toLowerCase(),
+                });
+                
+                let currentPage = 1;
+                let lineIndex = 0;
+                
+                while (lineIndex < lines.length) {
+                    // Clear canvas for new page
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#000000';
+                    
+                    // Draw lines for current page
+                    let y = margin;
+                    let linesOnThisPage = 0;
+                    const maxLinesForPage = Math.floor((canvas.height - (2 * margin) - (addPageNumbers ? 30 : 0)) / lineHeight);
+                    
+                    while (lineIndex < lines.length && linesOnThisPage < maxLinesForPage) {
+                        const line = lines[lineIndex];
+                        const x = isArabic ? canvas.width - margin : margin;
+                        
+                        // Check if there's enough space for this line
+                        const spaceNeeded = line === '' ? lineHeight * 0.5 : lineHeight;
+                        if (y + spaceNeeded > canvas.height - margin - (addPageNumbers ? 30 : 0)) {
+                            break;
+                        }
+                        
+                        // Render the line
+                        if (line === '') {
+                            y += lineHeight; // Same height as regular lines for empty lines
+                        } else {
+                            ctx.fillText(line, x, y);
+                            y += lineHeight;
+                        }
+                        
+                        lineIndex++;
+                        linesOnThisPage++;
+                    }
+                    
+                    // Add page numbers if requested
+                    if (addPageNumbers) {
+                        const pageText = `${currentPage}/${totalPages}`;
+                        ctx.font = `12px Arial`;
+                        const pageTextWidth = ctx.measureText(pageText).width;
+                        const pageX = isArabic ? canvas.width - margin : margin;
+                        ctx.fillText(pageText, pageX, canvas.height - 15);
+                        ctx.font = `${fontSize}px ${isArabic ? 'Cairo, Arial' : 'Arial'}`;
+                    }
+                    
+                    // Convert canvas to image and add to PDF
+                    const imgData = canvas.toDataURL('image/png', 1.0);
+                    
+                    if (currentPage > 1) {
+                        doc.addPage();
+                    }
+                    
+                    const pdfWidth = doc.internal.pageSize.getWidth();
+                    const pdfHeight = doc.internal.pageSize.getHeight();
+                    
+                    doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+                    
+                    currentPage++;
+                }
+                
+                return doc;
+            };
+
+            // Remove the old handleArabicText function
+            const updateText = (lang) => {
+                document.documentElement.lang = lang;
+                document.body.style.direction = translations[lang].direction;
+                document.body.style.fontFamily = `'${translations[lang].fontFamily}', sans-serif`;
+                document.title = translations[lang].title;
+                document.getElementById('header-title').textContent = translations[lang].title;
+                toolSelectorContainer.className = `flex justify-center mb-6 ${translations[lang].toolSelectorClass}`;
+
+                // Update textarea direction based on language
+                const textInput = document.getElementById('text-input');
+                textInput.dir = lang === 'ar' ? 'rtl' : 'ltr';
+                textInput.style.textAlign = lang === 'ar' ? 'right' : 'left';
+
+                for (const key in elements) {
+                    if (elements[key]) {
+                        if (translations[lang][key]) {
+                            if (elements[key].tagName === 'LABEL' && elements[key].htmlFor.includes('add-page-numbers')) {
+                                elements[key].textContent = translations[lang][key];
+                                if (lang === 'en') {
+                                    elements[key].classList.remove('ml-2');
+                                    elements[key].classList.add('mr-2');
+                                } else {
+                                    elements[key].classList.remove('mr-2');
+                                    elements[key].classList.add('ml-2');
+                                }
+                            } else {
+                                elements[key].textContent = translations[lang][key];
+                            }
+                        }
+                    }
+                }
+                
+                imageStatusMessageElement.textContent = translations[lang].imageNoImagesMessage;
+                textStatusMessageElement.textContent = '';
+                scannerStatusMessageElement.textContent = '';
+                
+                document.getElementById('image-portrait-option').textContent = translations[lang].imagePortraitOption;
+                document.getElementById('image-landscape-option').textContent = translations[lang].imageLandscapeOption;
+                document.getElementById('text-portrait-option').textContent = translations[lang].textPortraitOption;
+                document.getElementById('text-landscape-option').textContent = translations[lang].textLandscapeOption;
+                document.getElementById('scanner-portrait-option').textContent = translations[lang].scannerPortraitOption;
+                document.getElementById('scanner-landscape-option').textContent = translations[lang].scannerLandscapeOption;
+
+                const ocrLabel = document.getElementById('scanner-ocr-mode-label');
+                if (lang === 'en') {
+                    ocrLabel.classList.remove('ml-2');
+                    ocrLabel.classList.add('mr-2');
+                } else {
+                    ocrLabel.classList.remove('mr-2');
+                    ocrLabel.classList.add('ml-2');
+                }
+            };
+
+            menuBtn.addEventListener('click', () => {
+                sideMenu.classList.toggle('translate-x-full');
+                menuBtn.classList.toggle('active');
+            });
+
+            langSelect.addEventListener('change', (e) => {
+                currentLang = e.target.value;
+                updateText(currentLang);
+                sideMenu.classList.add('translate-x-full');
+                menuBtn.classList.remove('active');
+            });
+            
+            const allToolContainers = [imageToolContainer, textToolContainer, scannerToolContainer];
+            const allToolBtns = [showImageToolBtn, showTextToolBtn, showScannerToolBtn];
+
+            const switchTool = (activeContainer, activeBtn) => {
+                allToolContainers.forEach(container => container.classList.remove('active'));
+                allToolBtns.forEach(btn => btn.classList.remove('bg-blue-600', 'text-white'));
+                allToolBtns.forEach(btn => btn.classList.add('bg-gray-300', 'text-gray-800'));
+                
+                activeContainer.classList.add('active');
+                activeBtn.classList.remove('bg-gray-300', 'text-gray-800');
+                activeBtn.classList.add('bg-blue-600', 'text-white');
+            };
+
+            showImageToolBtn.addEventListener('click', () => {
+                switchTool(imageToolContainer, showImageToolBtn);
+            });
+            
+            showTextToolBtn.addEventListener('click', () => {
+                switchTool(textToolContainer, showTextToolBtn);
+            });
+
+            showScannerToolBtn.addEventListener('click', () => {
+                switchTool(scannerToolContainer, showScannerToolBtn);
+            });
+
+            // Image to PDF Logic
+            const imageUpload = document.getElementById('image-upload');
+            const imageConvertBtn = document.getElementById('image-convert-btn');
+            const imagePreview = document.getElementById('image-preview');
+            const imagePageFormat = document.getElementById('image-page-format');
+            const imagePageOrientation = document.getElementById('image-page-orientation');
+            const imageAddPageNumbers = document.getElementById('image-add-page-numbers');
+            
+            let imageFiles = [];
+
+            imageUpload.addEventListener('change', (event) => {
+                const files = Array.from(event.target.files);
+                imageFiles = [];
+                imagePreview.innerHTML = '';
+                imageStatusMessageElement.textContent = '';
+
+                if (files.length === 0) {
+                    imageStatusMessageElement.textContent = translations[currentLang].imageNoImagesMessage;
+                    return;
+                }
+
+                files.forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        imageFiles.push(file);
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const imgContainer = document.createElement('div');
+                            imgContainer.className = 'relative group';
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'w-full h-auto object-cover rounded-md shadow-md transform transition-transform duration-200 group-hover:scale-105';
+                            img.alt = 'Image preview';
+                            imgContainer.appendChild(img);
+                            imagePreview.appendChild(imgContainer);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                if (imageFiles.length > 0) {
+                    imageStatusMessageElement.textContent = translations[currentLang].imagesSelectedMessage(imageFiles.length);
+                } else {
+                    imageStatusMessageElement.textContent = translations[currentLang].imageNoSupportedImagesMessage;
+                }
+            });
+
+            imageConvertBtn.addEventListener('click', async () => {
+                if (imageFiles.length === 0) {
+                    imageStatusMessageElement.textContent = translations[currentLang].imagePleaseSelectImageMessage;
+                    return;
+                }
+
+                imageStatusMessageElement.textContent = translations[currentLang].imageConvertingMessage;
+                imageConvertBtn.disabled = true;
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: imagePageOrientation.value === 'landscape' ? 'l' : 'p',
+                    unit: 'mm',
+                    format: imagePageFormat.value,
+                });
+
+                for (let i = 0; i < imageFiles.length; i++) {
+                    const file = imageFiles[i];
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+
+                    await new Promise(resolve => {
+                        reader.onload = (e) => {
+                            const imgData = e.target.result;
+                            const img = new Image();
+                            img.onload = () => {
+                                if (i > 0) {
+                                    doc.addPage();
+                                }
+                                const imgWidth = img.width;
+                                const imgHeight = img.height;
+                                const pageWidth = doc.internal.pageSize.getWidth();
+                                const pageHeight = doc.internal.pageSize.getHeight();
+                                const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+                                const newWidth = imgWidth * ratio;
+                                const newHeight = imgHeight * ratio;
+                                const x = (pageWidth - newWidth) / 2;
+                                const y = (pageHeight - newHeight) / 2;
+                                doc.addImage(imgData, 'JPEG', x, y, newWidth, newHeight);
+
+                                if (imageAddPageNumbers.checked) {
+                                    const pageNumber = i + 1;
+                                    const totalPages = imageFiles.length;
+                                    doc.setFontSize(10);
+                                    doc.text(`${pageNumber}/${totalPages}`, pageWidth - 15, pageHeight - 10, { align: 'right' });
+                                }
+
+                                resolve();
+                            };
+                            img.src = imgData;
+                        };
+                    });
+                }
+
+                doc.save('converted-images.pdf');
+                imageStatusMessageElement.textContent = translations[currentLang].imageConversionSuccessMessage;
+                imageConvertBtn.disabled = false;
+            });
+            
+            // Text to PDF Logic - FIXED for Arabic
+            const textInput = document.getElementById('text-input');
+            const textConvertBtn = document.getElementById('text-convert-btn');
+            const textPageFormat = document.getElementById('text-page-format');
+            const textPageOrientation = document.getElementById('text-page-orientation');
+            const textAddPageNumbers = document.getElementById('text-add-page-numbers');
+            
+            textConvertBtn.addEventListener('click', async () => {
+                const text = textInput.value.trim();
+                if (text.length === 0) {
+                    textStatusMessageElement.textContent = translations[currentLang].textNoTextMessage;
+                    return;
+                }
+
+                textStatusMessageElement.textContent = translations[currentLang].textConvertingMessage;
+                textConvertBtn.disabled = true;
+
+                try {
+                    const doc = await createTextAsPDF(text, {
+                        pageFormat: textPageFormat.value,
+                        orientation: textPageOrientation.value,
+                        addPageNumbers: textAddPageNumbers.checked,
+                        fontSize: 16,
+                        lineHeight: 24
+                    });
+
+                    doc.save('converted-text.pdf');
+                    textStatusMessageElement.textContent = translations[currentLang].textConversionSuccessMessage;
+                } catch (error) {
+                    console.error('Error converting text to PDF:', error);
+                    textStatusMessageElement.textContent = 'حدث خطأ أثناء التحويل. الرجاء المحاولة مرة أخرى.';
+                }
+                
+                textConvertBtn.disabled = false;
+            });
+
+            // Scanner to PDF Logic
+            const cameraPreview = document.getElementById('camera-preview');
+            const cameraStatus = document.getElementById('camera-status');
+            const openCameraBtn = document.getElementById('open-camera-btn');
+            const captureImageBtn = document.getElementById('capture-image-btn');
+            const capturedImagesPreview = document.getElementById('captured-images-preview');
+            const capturedStatusMessage = document.getElementById('captured-status-message');
+            const scannerConvertBtn = document.getElementById('scanner-convert-btn');
+            const scannerPageFormat = document.getElementById('scanner-page-format');
+            const scannerPageOrientation = document.getElementById('scanner-page-orientation');
+            const scannerAddPageNumbers = document.getElementById('scanner-add-page-numbers');
+            
+            let capturedFiles = [];
+            let mediaStream = null;
+            let ocrWorker = null;
+
+            openCameraBtn.addEventListener('click', async () => {
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                    cameraPreview.srcObject = null;
+                    capturedStatusMessage.textContent = translations[currentLang].capturedStatusMessage;
+                    captureImageBtn.classList.add('hidden');
+                    openCameraBtn.textContent = translations[currentLang].openCameraBtn;
+                    mediaStream = null;
+                    return;
+                }
+
+                try {
+                    cameraStatus.textContent = "يتم الوصول إلى الكاميرا...";
+                    mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                        video: {
+                            facingMode: { exact: "environment" }
+                        }
+                    });
+                    cameraPreview.srcObject = mediaStream;
+                    cameraPreview.play();
+                    cameraStatus.textContent = "";
+                    captureImageBtn.classList.remove('hidden');
+                    openCameraBtn.textContent = "إغلاق الكاميرا";
+
+                } catch (error) {
+                    console.error("Error accessing camera: ", error);
+                    try {
+                        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                        cameraPreview.srcObject = mediaStream;
+                        cameraPreview.play();
+                        cameraStatus.textContent = "";
+                        captureImageBtn.classList.remove('hidden');
+                        openCameraBtn.textContent = "إغلاق الكاميرا";
+                    } catch (e) {
+                        console.error("Error accessing any camera: ", e);
+                        cameraStatus.textContent = "تعذر الوصول إلى الكاميرا. الرجاء التحقق من الأذونات.";
+                    }
+                }
+            });
+
+            captureImageBtn.addEventListener('click', () => {
+                if (!mediaStream) return;
+
+                const canvas = document.createElement('canvas');
+                canvas.width = cameraPreview.videoWidth;
+                canvas.height = cameraPreview.videoHeight;
+                const context = canvas.getContext('2d');
+                context.drawImage(cameraPreview, 0, 0, canvas.width, canvas.height);
+                
+                const imageDataUrl = canvas.toDataURL('image/jpeg');
+                
+                const byteString = atob(imageDataUrl.split(',')[1]);
+                const mimeString = imageDataUrl.split(',')[0].split(':')[1].split(';')[0];
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                const file = new File([ab], `scan-${Date.now()}.jpeg`, { type: mimeString });
+
+                capturedFiles.push(file);
+
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'relative group';
+                const img = document.createElement('img');
+                img.src = imageDataUrl;
+                img.className = 'w-full h-auto object-cover rounded-md shadow-md transform transition-transform duration-200 group-hover:scale-105';
+                img.alt = 'Captured image preview';
+                imgContainer.appendChild(img);
+                capturedImagesPreview.appendChild(imgContainer);
+
+                capturedStatusMessage.textContent = translations[currentLang].imagesSelectedMessage(capturedFiles.length);
+            });
+
+            scannerConvertBtn.addEventListener('click', async () => {
+                if (capturedFiles.length === 0) {
+                    scannerStatusMessageElement.textContent = translations[currentLang].scannerNoImagesMessage;
+                    return;
+                }
+
+                scannerConvertBtn.disabled = true;
+                const isOcrMode = scannerOcrMode.checked;
+                
+                if (isOcrMode) {
+                    scannerStatusMessageElement.textContent = translations[currentLang].scannerOcrConvertingMessage;
+                    ocrOverlay.classList.remove('hidden');
+
+                    if (!ocrWorker) {
+                        ocrWorker = Tesseract.createWorker({
+                            logger: m => {
+                                console.log(m);
+                                if (m.status === 'recognizing text') {
+                                    ocrOverlay.querySelector('div').textContent = `${translations[currentLang].scannerOcrConvertingMessage} (${(m.progress * 100).toFixed(0)}%)`;
+                                }
+                            }
+                        });
+                        await ocrWorker.load();
+                        await ocrWorker.loadLanguage('ara+eng'); 
+                        await ocrWorker.initialize('ara+eng');
+                    }
+
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({
+                        orientation: scannerPageOrientation.value === 'landscape' ? 'l' : 'p',
+                        unit: 'mm',
+                        format: scannerPageFormat.value,
+                    });
+
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
+                    const margin = 20;
+                    const availableWidth = pageWidth - 2 * margin;
+
+                    for (let i = 0; i < capturedFiles.length; i++) {
+                        const file = capturedFiles[i];
+                        const { data: { text } } = await ocrWorker.recognize(file);
+                        
+                        if (i > 0) {
+                            doc.addPage();
+                        }
+                        
+                        const isArabic = /[\u0600-\u06FF]/.test(text);
+                        
+                        if (i > 0) {
+                            doc.addPage();
+                        }
+                        
+                        try {
+                            const textDoc = await createTextAsPDF(text, {
+                                pageFormat: scannerPageFormat.value,
+                                orientation: scannerPageOrientation.value,
+                                addPageNumbers: false, // Handle separately
+                                fontSize: 14,
+                                lineHeight: 20
+                            });
+                            
+                            // Get the generated pages and merge them
+                            const pageCount = textDoc.internal.getNumberOfPages();
+                            for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
+                                if (i > 0 || pageNum > 1) {
+                                    doc.addPage();
+                                }
+                                
+                                // Convert the text page to image and add to main PDF
+                                const canvas = document.createElement('canvas');
+                                const ctx = canvas.getContext('2d');
+                                canvas.width = 595;
+                                canvas.height = 842;
+                                
+                                ctx.fillStyle = '#ffffff';
+                                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                                ctx.fillStyle = '#000000';
+                                ctx.font = '14px Cairo, Arial';
+                                ctx.textAlign = isArabic ? 'right' : 'left';
+                                
+                                const lines = text.split('\n');
+                                let y = 50;
+                                const lineHeight = 22;
+                                
+                                lines.forEach((line, index) => {
+                                    if (y > canvas.height - 80) return;
+                                    
+                                    // Handle empty lines exactly as in original
+                                    if (line.trim() === '') {
+                                        y += lineHeight; // Same spacing as regular lines
+                                        return;
+                                    }
+                                    
+                                    const x = isArabic ? canvas.width - 50 : 50;
+                                    
+                                    // Split long lines that exceed canvas width
+                                    const maxWidth = canvas.width - 100;
+                                    const words = line.split(' ');
+                                    let currentLine = '';
+                                    
+                                    words.forEach(word => {
+                                        const testLine = currentLine + (currentLine ? ' ' : '') + word;
+                                        const metrics = ctx.measureText(testLine);
+                                        
+                                        if (metrics.width <= maxWidth) {
+                                            currentLine = testLine;
+                                        } else {
+                                            if (currentLine) {
+                                                ctx.fillText(currentLine, x, y);
+                                                y += lineHeight;
+                                            }
+                                            currentLine = word;
+                                        }
+                                    });
+                                    
+                                    if (currentLine) {
+                                        ctx.fillText(currentLine, x, y);
+                                        y += lineHeight;
+                                    }
+                                });
+                                
+                                const imgData = canvas.toDataURL('image/png');
+                                const pdfWidth = doc.internal.pageSize.getWidth();
+                                const pdfHeight = doc.internal.pageSize.getHeight();
+                                doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                            }
+                            
+                        } catch (err) {
+                            console.error('Error processing OCR text:', err);
+                            // Fallback to simple text handling
+                            const pageWidth = doc.internal.pageSize.getWidth();
+                            const pageHeight = doc.internal.pageSize.getHeight();
+                            const margin = 20;
+                            
+                            doc.setFontSize(12);
+                            const lines = text.split('\n');
+                            let currentY = margin;
+                            
+                            lines.forEach(line => {
+                                if (currentY > pageHeight - margin) {
+                                    doc.addPage();
+                                    currentY = margin;
+                                }
+                                doc.text(line || ' ', margin, currentY);
+                                currentY += 7;
+                            });
+                        }
+
+                        if (scannerAddPageNumbers.checked) {
+                            const pageNumber = i + 1;
+                            const totalPages = capturedFiles.length;
+                            doc.setFontSize(10);
+                            doc.text(`${pageNumber}/${totalPages}`, pageWidth - 15, pageHeight - 10, { align: 'right' });
+                        }
+                    }
+
+                    doc.save('scanned-text-document.pdf');
+                    ocrOverlay.classList.add('hidden');
+
+                } else {
+                    scannerStatusMessageElement.textContent = translations[currentLang].scannerConvertingMessage;
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({
+                        orientation: scannerPageOrientation.value === 'landscape' ? 'l' : 'p',
+                        unit: 'mm',
+                        format: scannerPageFormat.value,
+                    });
+
+                    for (let i = 0; i < capturedFiles.length; i++) {
+                        const file = capturedFiles[i];
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+
+                        await new Promise(resolve => {
+                            reader.onload = (e) => {
+                                const imgData = e.target.result;
+                                const img = new Image();
+                                img.onload = () => {
+                                    if (i > 0) {
+                                        doc.addPage();
+                                    }
+                                    const imgWidth = img.width;
+                                    const imgHeight = img.height;
+                                    const pageWidth = doc.internal.pageSize.getWidth();
+                                    const pageHeight = doc.internal.pageSize.getHeight();
+                                    const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+                                    const newWidth = imgWidth * ratio;
+                                    const newHeight = imgHeight * ratio;
+                                    const x = (pageWidth - newWidth) / 2;
+                                    const y = (pageHeight - newHeight) / 2;
+                                    doc.addImage(imgData, 'JPEG', x, y, newWidth, newHeight);
+                                    
+                                    if (scannerAddPageNumbers.checked) {
+                                        const pageNumber = i + 1;
+                                        const totalPages = capturedFiles.length;
+                                        doc.setFontSize(10);
+                                        doc.text(`${pageNumber}/${totalPages}`, pageWidth - 15, pageHeight - 10, { align: 'right' });
+                                    }
+                                    resolve();
+                                };
+                                img.src = imgData;
+                            };
+                        });
+                    }
+                    doc.save('scanned-document.pdf');
+                }
+
+                scannerStatusMessageElement.textContent = translations[currentLang].scannerConversionSuccessMessage;
+                scannerConvertBtn.disabled = false;
+            });
+
+            updateText(currentLang);
+        });
+    </script>
+</body>
+</html>
