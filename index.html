@@ -592,6 +592,7 @@
                                 <select id="image-page-orientation" class="block w-full form-select text-gray-800">
                                     <option value="portrait" id="image-portrait-option"></option>
                                     <option value="landscape" id="image-landscape-option"></option>
+                                    <option value="book" id="image-book-option"></option>
                                 </select>
                             </div>
                         </div>
@@ -641,6 +642,7 @@
                                 <select id="text-page-orientation" class="block w-full form-select text-gray-800">
                                     <option value="portrait" id="text-portrait-option"></option>
                                     <option value="landscape" id="text-landscape-option"></option>
+                                    <option value="book" id="text-book-option"></option>
                                 </select>
                             </div>
                         </div>
@@ -726,6 +728,7 @@
                                 <select id="scanner-page-orientation" class="block w-full form-select text-gray-800">
                                     <option value="portrait" id="scanner-portrait-option"></option>
                                     <option value="landscape" id="scanner-landscape-option"></option>
+                                    <option value="book" id="scanner-book-option"></option>
                                 </select>
                             </div>
                         </div>
@@ -900,6 +903,7 @@
                     imageOrientationLabel: 'اتجاه الصفحة',
                     imagePortraitOption: 'عمودي',
                     imageLandscapeOption: 'أفقي',
+                    imageBookOption: 'كتاب (صفحتان جنباً إلى جنب)',
                     'btn-text-image-convert': 'تحويل إلى PDF',
                     imagePageNumbersLabel: 'إضافة أرقام الصفحات',
                     imageNoImagesMessage: 'لم يتم اختيار أي صور.',
@@ -917,6 +921,7 @@
                     textOrientationLabel: 'اتجاه الصفحة',
                     textPortraitOption: 'عمودي',
                     textLandscapeOption: 'أفقي',
+                    textBookOption: 'كتاب (صفحتان جنباً إلى جنب)',
                     'btn-text-text-convert': 'تحويل إلى PDF',
                     textPageNumbersLabel: 'إضافة أرقام الصفحات',
                     textNoTextMessage: 'الرجاء إدخال بعض النص لتحويله.',
@@ -934,6 +939,7 @@
                     scannerOrientationLabel: 'اتجاه الصفحة',
                     scannerPortraitOption: 'عمودي',
                     scannerLandscapeOption: 'أفقي',
+                    scannerBookOption: 'كتاب (صفحتان جنباً إلى جنب)',
                     'btn-text-scanner-convert': 'تحويل إلى PDF',
                     scannerOcrModeLabel: 'استخراج النص (OCR) فقط',
                     scannerPageNumbersLabel: 'إضافة أرقام الصفحات',
@@ -984,6 +990,7 @@
                     imageOrientationLabel: 'Page Orientation',
                     imagePortraitOption: 'Portrait',
                     imageLandscapeOption: 'Landscape',
+                    imageBookOption: 'Book (Two Pages Side by Side)',
                     'btn-text-image-convert': 'Convert to PDF',
                     imagePageNumbersLabel: 'Add Page Numbers',
                     imageNoImagesMessage: 'No images selected.',
@@ -1001,6 +1008,7 @@
                     textOrientationLabel: 'Page Orientation',
                     textPortraitOption: 'Portrait',
                     textLandscapeOption: 'Landscape',
+                    textBookOption: 'Book (Two Pages Side by Side)',
                     'btn-text-text-convert': 'Convert to PDF',
                     textPageNumbersLabel: 'Add Page Numbers',
                     textNoTextMessage: 'Please enter some text to convert.',
@@ -1018,6 +1026,7 @@
                     scannerOrientationLabel: 'Page Orientation',
                     scannerPortraitOption: 'Portrait',
                     scannerLandscapeOption: 'Landscape',
+                    scannerBookOption: 'Book (Two Pages Side by Side)',
                     'btn-text-scanner-convert': 'Convert to PDF',
                     scannerOcrModeLabel: 'Extract Text (OCR) Only',
                     scannerPageNumbersLabel: 'Add Page Numbers',
@@ -1078,6 +1087,7 @@
                 elements.imageOrientationLabel.textContent = translations[lang].imageOrientationLabel;
                 elements.imagePortraitOption.textContent = translations[lang].imagePortraitOption;
                 elements.imageLandscapeOption.textContent = translations[lang].imageLandscapeOption;
+                document.getElementById('image-book-option').textContent = translations[lang].imageBookOption;
                 elements.imagePageNumbersLabel.textContent = translations[lang].imagePageNumbersLabel;
                 elements.textTitle.textContent = translations[lang].textTitle;
                 elements.textSubtitle.textContent = translations[lang].textSubtitle;
@@ -1088,6 +1098,7 @@
                 elements.textOrientationLabel.textContent = translations[lang].textOrientationLabel;
                 elements.textPortraitOption.textContent = translations[lang].textPortraitOption;
                 elements.textLandscapeOption.textContent = translations[lang].textLandscapeOption;
+                document.getElementById('text-book-option').textContent = translations[lang].textBookOption;
                 elements.textPageNumbersLabel.textContent = translations[lang].textPageNumbersLabel;
                 elements.scannerTitle.textContent = translations[lang].scannerTitle;
                 elements.scannerSubtitle.textContent = translations[lang].scannerSubtitle;
@@ -1099,6 +1110,7 @@
                 elements.scannerOrientationLabel.textContent = translations[lang].scannerOrientationLabel;
                 elements.scannerPortraitOption.textContent = translations[lang].scannerPortraitOption;
                 elements.scannerLandscapeOption.textContent = translations[lang].scannerLandscapeOption;
+                document.getElementById('scanner-book-option').textContent = translations[lang].scannerBookOption;
                 elements.scannerOcrModeLabel.textContent = translations[lang].scannerOcrModeLabel;
                 elements.scannerPageNumbersLabel.textContent = translations[lang].scannerPageNumbersLabel;
                 elements.ocrStatusMessage.textContent = translations[lang].ocrStatusMessage;
@@ -1130,7 +1142,7 @@
 
             const updateStatusMessage = (element, message, type = 'default') => {
                 element.textContent = message;
-                element.className = `mt-4 text-center status-message ${type === 'success' ? 'status-success' : type === 'error' ? 'status-error' : type === 'loading' ? 'status-loading' : ''}`;
+                element.className = `mt-4 text-center text-white/70 status-message ${type === 'success' ? 'status-success' : type === 'error' ? 'status-error' : type === 'loading' ? 'status-loading' : ''}`;
             };
 
             menuBtn.addEventListener('click', () => {
@@ -1439,43 +1451,136 @@
 
                 try {
                     const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF({
-                        orientation: imagePageOrientation.value === 'landscape' ? 'l' : 'p',
-                        unit: 'mm',
-                        format: imagePageFormat.value,
-                    });
-
-                    for (let i = 0; i < orderedImageFiles.length; i++) {
-                        const item = orderedImageFiles[i];
-                        if (i > 0) {
-                            doc.addPage();
-                        }
-
-                        const img = new Image();
-                        await new Promise((resolve) => {
-                            img.onload = () => {
-                                const imgWidth = img.width;
-                                const imgHeight = img.height;
-                                const pageWidth = doc.internal.pageSize.getWidth();
-                                const pageHeight = doc.internal.pageSize.getHeight();
-                                const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
-                                const newWidth = imgWidth * ratio;
-                                const newHeight = imgHeight * ratio;
-                                const x = (pageWidth - newWidth) / 2;
-                                const y = (pageHeight - newHeight) / 2;
-
-                                doc.addImage(item.dataUrl, 'JPEG', x, y, newWidth, newHeight);
-
-                                if (imageAddPageNumbers.checked) {
-                                    const pageNumber = i + 1;
-                                    const totalPages = orderedImageFiles.length;
-                                    doc.setFontSize(10);
-                                    doc.text(`${pageNumber}/${totalPages}`, pageWidth - 15, pageHeight - 10, { align: 'right' });
-                                }
-                                resolve();
-                            };
-                            img.src = item.dataUrl;
+                    
+                    // Get selected orientation and format
+                    const selectedOrientation = imagePageOrientation.value;
+                    const selectedFormat = imagePageFormat.value;
+                    
+                    // Debug: Log the selected values
+                    console.log('Selected orientation:', selectedOrientation);
+                    console.log('Selected format:', selectedFormat);
+                    
+                    let doc;
+                    
+                    if (selectedOrientation === 'book') {
+                        // Create landscape document for book layout
+                        doc = new jsPDF({
+                            orientation: 'landscape',
+                            unit: 'mm',
+                            format: selectedFormat.toLowerCase(),
                         });
+                        
+                        // Process images in pairs for book layout
+                        for (let i = 0; i < orderedImageFiles.length; i += 2) {
+                            if (i > 0) {
+                                doc.addPage(selectedFormat.toLowerCase(), 'landscape');
+                            }
+
+                            const pageWidth = doc.internal.pageSize.getWidth();
+                            const pageHeight = doc.internal.pageSize.getHeight();
+                            const halfWidth = pageWidth / 2;
+                            
+                            // Left page (if exists)
+                            if (orderedImageFiles[i]) {
+                                const leftImg = new Image();
+                                await new Promise((resolve) => {
+                                    leftImg.onload = () => {
+                                        const imgWidth = leftImg.width;
+                                        const imgHeight = leftImg.height;
+                                        const ratio = Math.min(halfWidth / imgWidth, pageHeight / imgHeight);
+                                        const newWidth = imgWidth * ratio;
+                                        const newHeight = imgHeight * ratio;
+                                        const x = (halfWidth - newWidth) / 2;
+                                        const y = (pageHeight - newHeight) / 2;
+
+                                        doc.addImage(orderedImageFiles[i].dataUrl, 'JPEG', x, y, newWidth, newHeight);
+                                        resolve();
+                                    };
+                                    leftImg.src = orderedImageFiles[i].dataUrl;
+                                });
+                            }
+                            
+                            // Right page (if exists)
+                            if (orderedImageFiles[i + 1]) {
+                                const rightImg = new Image();
+                                await new Promise((resolve) => {
+                                    rightImg.onload = () => {
+                                        const imgWidth = rightImg.width;
+                                        const imgHeight = rightImg.height;
+                                        const ratio = Math.min(halfWidth / imgWidth, pageHeight / imgHeight);
+                                        const newWidth = imgWidth * ratio;
+                                        const newHeight = imgHeight * ratio;
+                                        const x = halfWidth + (halfWidth - newWidth) / 2;
+                                        const y = (pageHeight - newHeight) / 2;
+
+                                        doc.addImage(orderedImageFiles[i + 1].dataUrl, 'JPEG', x, y, newWidth, newHeight);
+                                        resolve();
+                                    };
+                                    rightImg.src = orderedImageFiles[i + 1].dataUrl;
+                                });
+                            }
+                            
+                            // Add dividing line between pages
+                            doc.setDrawColor(200, 200, 200);
+                            doc.setLineWidth(0.5);
+                            doc.line(halfWidth, 0, halfWidth, pageHeight);
+                            
+                            // Add page numbers if enabled
+                            if (imageAddPageNumbers.checked) {
+                                doc.setFontSize(8);
+                                doc.setTextColor(100, 100, 100);
+                                if (orderedImageFiles[i]) {
+                                    doc.text(`${i + 1}`, halfWidth / 2, pageHeight - 5, { align: 'center' });
+                                }
+                                if (orderedImageFiles[i + 1]) {
+                                    doc.text(`${i + 2}`, halfWidth + halfWidth / 2, pageHeight - 5, { align: 'center' });
+                                }
+                            }
+                        }
+                    } else {
+                        // Regular single page layout
+                        doc = new jsPDF({
+                            orientation: selectedOrientation === 'landscape' ? 'landscape' : 'portrait',
+                            unit: 'mm',
+                            format: selectedFormat.toLowerCase(),
+                        });
+
+                        for (let i = 0; i < orderedImageFiles.length; i++) {
+                            const item = orderedImageFiles[i];
+                            if (i > 0) {
+                                doc.addPage(selectedFormat.toLowerCase(), selectedOrientation === 'landscape' ? 'landscape' : 'portrait');
+                            }
+
+                            const img = new Image();
+                            await new Promise((resolve) => {
+                                img.onload = () => {
+                                    const imgWidth = img.width;
+                                    const imgHeight = img.height;
+                                    const pageWidth = doc.internal.pageSize.getWidth();
+                                    const pageHeight = doc.internal.pageSize.getHeight();
+                                    
+                                    // Debug: Log page dimensions
+                                    console.log('Page dimensions:', pageWidth, 'x', pageHeight);
+                                    
+                                    const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+                                    const newWidth = imgWidth * ratio;
+                                    const newHeight = imgHeight * ratio;
+                                    const x = (pageWidth - newWidth) / 2;
+                                    const y = (pageHeight - newHeight) / 2;
+
+                                    doc.addImage(item.dataUrl, 'JPEG', x, y, newWidth, newHeight);
+
+                                    if (imageAddPageNumbers.checked) {
+                                        const pageNumber = i + 1;
+                                        const totalPages = orderedImageFiles.length;
+                                        doc.setFontSize(10);
+                                        doc.text(`${pageNumber}/${totalPages}`, pageWidth - 15, pageHeight - 10, { align: 'right' });
+                                    }
+                                    resolve();
+                                };
+                                img.src = item.dataUrl;
+                            });
+                        }
                     }
 
                     doc.save('converted-images.pdf');
@@ -1486,6 +1591,125 @@
                 }
                 imageConvertBtn.disabled = false;
             });
+
+            // Function to determine PDF orientation based on selection
+            const getOrientation = (selection) => {
+                if (selection === 'book') return 'landscape';
+                return selection === 'landscape' ? 'landscape' : 'portrait';
+            };
+
+            // Function to create book-style layout with text
+            const createBookTextLayout = (text, doc, pageFormat, addPageNumbers = false) => {
+                const isArabic = /[\u0600-\u06FF]/.test(text);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // Set canvas dimensions for landscape book layout
+                const pageDimensions = {
+                    a4: [842, 595],
+                    letter: [792, 612]
+                };
+                
+                const dims = pageDimensions[pageFormat.toLowerCase()] || pageDimensions.a4;
+                canvas.width = dims[0];
+                canvas.height = dims[1];
+                
+                const pageWidth = canvas.width / 2; // Half width for each page
+                const pageHeight = canvas.height;
+                const margin = 30;
+                const fontSize = 14;
+                const lineHeight = 20;
+                
+                ctx.font = `${fontSize}px ${isArabic ? 'Cairo, Arial' : 'Arial'}`;
+                ctx.textBaseline = 'top';
+
+                // Split text into words and create lines
+                const words = text.split(/\s+/);
+                const lines = [];
+                let currentLine = '';
+                
+                const maxWidth = pageWidth - (2 * margin);
+
+                words.forEach(word => {
+                    const testLine = currentLine + (currentLine ? ' ' : '') + word;
+                    const metrics = ctx.measureText(testLine);
+                    
+                    if (metrics.width <= maxWidth) {
+                        currentLine = testLine;
+                    } else {
+                        if (currentLine) lines.push(currentLine);
+                        currentLine = word;
+                    }
+                });
+                
+                if (currentLine) lines.push(currentLine);
+
+                const linesPerPage = Math.floor((pageHeight - (2 * margin) - 20) / lineHeight);
+                let currentPageLines = 0;
+                let lineIndex = 0;
+                let pageNumber = 1;
+
+                while (lineIndex < lines.length) {
+                    // Clear canvas
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#000000';
+
+                    // Left page
+                    let leftY = margin;
+                    let leftLines = 0;
+                    ctx.textAlign = isArabic ? 'right' : 'left';
+                    
+                    while (lineIndex < lines.length && leftLines < linesPerPage) {
+                        const x = isArabic ? pageWidth - margin : margin;
+                        ctx.fillText(lines[lineIndex], x, leftY);
+                        leftY += lineHeight;
+                        leftLines++;
+                        lineIndex++;
+                    }
+
+                    // Right page
+                    let rightY = margin;
+                    let rightLines = 0;
+                    
+                    while (lineIndex < lines.length && rightLines < linesPerPage) {
+                        const x = isArabic ? canvas.width - margin : pageWidth + margin;
+                        ctx.fillText(lines[lineIndex], x, rightY);
+                        rightY += lineHeight;
+                        rightLines++;
+                        lineIndex++;
+                    }
+
+                    // Add dividing line
+                    ctx.strokeStyle = '#cccccc';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(pageWidth, 0);
+                    ctx.lineTo(pageWidth, pageHeight);
+                    ctx.stroke();
+
+                    // Add page numbers if enabled
+                    if (addPageNumbers) {
+                        ctx.font = '10px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(pageNumber.toString(), pageWidth / 2, pageHeight - 10);
+                        if (leftLines > 0 || rightLines > 0) {
+                            ctx.fillText((pageNumber + 1).toString(), pageWidth + pageWidth / 2, pageHeight - 10);
+                        }
+                        pageNumber += 2;
+                    }
+
+                    // Add to PDF
+                    const imgData = canvas.toDataURL('image/png', 1.0);
+                    if (pageNumber > (addPageNumbers ? 3 : 1)) {
+                        doc.addPage(pageFormat.toLowerCase(), 'landscape');
+                    }
+                    
+                    const pdfWidth = doc.internal.pageSize.getWidth();
+                    const pdfHeight = doc.internal.pageSize.getHeight();
+                    doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                }
+            };
 
             // Improved Arabic text handling using canvas-based approach
             const createTextAsPDF = async (text, options = {}) => {
@@ -1503,14 +1727,18 @@
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
 
-                // Set canvas size based on PDF page format
+                // Set canvas size based on PDF page format with explicit dimensions
                 const pageDimensions = {
                     a4: { portrait: [595, 842], landscape: [842, 595] },
                     letter: { portrait: [612, 792], landscape: [792, 612] }
                 };
 
-                canvas.width = pageDimensions[pageFormat.toLowerCase()][orientation][0];
-                canvas.height = pageDimensions[pageFormat.toLowerCase()][orientation][1];
+                const dims = pageDimensions[pageFormat.toLowerCase()][orientation];
+                canvas.width = dims[0];
+                canvas.height = dims[1];
+
+                // Debug: Log canvas dimensions
+                console.log('Canvas dimensions for text:', canvas.width, 'x', canvas.height, 'orientation:', orientation);
 
                 // Configure canvas for high quality text rendering
                 ctx.textAlign = isArabic ? 'right' : 'left';
@@ -1555,8 +1783,10 @@
                 const totalPages = Math.ceil(lines.length / linesPerPage);
 
                 const { jsPDF } = window.jspdf;
+                
+                // Use explicit orientation names
                 const doc = new jsPDF({
-                    orientation: orientation === 'landscape' ? 'l' : 'p',
+                    orientation: orientation === 'landscape' ? 'landscape' : 'portrait',
                     unit: 'pt',
                     format: pageFormat.toLowerCase(),
                 });
@@ -1598,11 +1828,15 @@
 
                     const imgData = canvas.toDataURL('image/png', 1.0);
                     if (currentPage > 1) {
-                        doc.addPage();
+                        doc.addPage(pageFormat.toLowerCase(), orientation === 'landscape' ? 'landscape' : 'portrait');
                     }
 
                     const pdfWidth = doc.internal.pageSize.getWidth();
                     const pdfHeight = doc.internal.pageSize.getHeight();
+                    
+                    // Debug: Log PDF page dimensions
+                    console.log('PDF page dimensions:', pdfWidth, 'x', pdfHeight);
+                    
                     doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
 
                     currentPage++;
@@ -1628,15 +1862,32 @@
                 textConvertBtn.disabled = true;
 
                 try {
-                    const doc = await createTextAsPDF(text, {
-                        pageFormat: textPageFormat.value,
-                        orientation: textPageOrientation.value,
-                        addPageNumbers: textAddPageNumbers.checked,
-                        fontSize: 16,
-                        lineHeight: 24
-                    });
+                    const { jsPDF } = window.jspdf;
+                    const selectedOrientation = textPageOrientation.value;
+                    const selectedFormat = textPageFormat.value;
+                    
+                    if (selectedOrientation === 'book') {
+                        // Create book-style PDF
+                        const doc = new jsPDF({
+                            orientation: 'landscape',
+                            unit: 'pt',
+                            format: selectedFormat.toLowerCase(),
+                        });
+                        
+                        createBookTextLayout(text, doc, selectedFormat, textAddPageNumbers.checked);
+                        doc.save('converted-text-book.pdf');
+                    } else {
+                        // Regular text PDF
+                        const doc = await createTextAsPDF(text, {
+                            pageFormat: selectedFormat,
+                            orientation: selectedOrientation,
+                            addPageNumbers: textAddPageNumbers.checked,
+                            fontSize: 16,
+                            lineHeight: 24
+                        });
+                        doc.save('converted-text.pdf');
+                    }
 
-                    doc.save('converted-text.pdf');
                     updateStatusMessage(textStatusMessageElement, translations[currentLang].textConversionSuccessMessage, 'success');
                 } catch (error) {
                     console.error('Error converting text to PDF:', error);
@@ -1768,10 +2019,18 @@
                     }
 
                     const { jsPDF } = window.jspdf;
+                    
+                    // Get selected values
+                    const selectedOrientation = scannerPageOrientation.value;
+                    const selectedFormat = scannerPageFormat.value;
+                    
+                    console.log('Scanner OCR - Selected orientation:', selectedOrientation);
+                    console.log('Scanner OCR - Selected format:', selectedFormat);
+                    
                     const doc = new jsPDF({
-                        orientation: scannerPageOrientation.value === 'landscape' ? 'l' : 'p',
+                        orientation: selectedOrientation === 'landscape' ? 'landscape' : 'portrait',
                         unit: 'pt',
-                        format: scannerPageFormat.value,
+                        format: selectedFormat.toLowerCase(),
                     });
 
                     for (let i = 0; i < capturedFiles.length; i++) {
@@ -1779,8 +2038,8 @@
                         const { data: { text } } = await ocrWorker.recognize(file);
                         
                         const textDoc = await createTextAsPDF(text, {
-                            pageFormat: scannerPageFormat.value,
-                            orientation: scannerPageOrientation.value,
+                            pageFormat: selectedFormat,
+                            orientation: selectedOrientation,
                             addPageNumbers: false,
                             fontSize: 14,
                             lineHeight: 20
@@ -1790,7 +2049,7 @@
                         for (let p = 1; p <= pages; p++) {
                             const pageData = textDoc.internal.pages[p];
                             if (i > 0 || p > 1) {
-                                doc.addPage();
+                                doc.addPage(selectedFormat.toLowerCase(), selectedOrientation === 'landscape' ? 'landscape' : 'portrait');
                             }
                             doc.setPage(doc.internal.pages.length);
                             doc.internal.pages[doc.internal.pages.length - 1] = pageData;
@@ -1803,52 +2062,153 @@
                     updateStatusMessage(scannerStatusMessageElement, translations[currentLang].scannerConvertingMessage, 'loading');
 
                     const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF({
-                        orientation: scannerPageOrientation.value === 'landscape' ? 'l' : 'p',
-                        unit: 'mm',
-                        format: scannerPageFormat.value,
-                    });
+                    
+                    // Get selected values
+                    const selectedOrientation = scannerPageOrientation.value;
+                    const selectedFormat = scannerPageFormat.value;
+                    
+                    console.log('Scanner Image - Selected orientation:', selectedOrientation);
+                    console.log('Scanner Image - Selected format:', selectedFormat);
+                    
+                    let doc;
+                    
+                    if (selectedOrientation === 'book') {
+                        // Create landscape document for book layout
+                        doc = new jsPDF({
+                            orientation: 'landscape',
+                            unit: 'mm',
+                            format: selectedFormat.toLowerCase(),
+                        });
+                        
+                        // Process images in pairs for book layout
+                        for (let i = 0; i < capturedFiles.length; i += 2) {
+                            if (i > 0) {
+                                doc.addPage(selectedFormat.toLowerCase(), 'landscape');
+                            }
 
-                    for (let i = 0; i < capturedFiles.length; i++) {
-                        const file = capturedFiles[i];
-                        const reader = new FileReader();
-                        reader.readAsDataURL(file);
-                        await new Promise(resolve => {
-                            reader.onload = (e) => {
-                                const imgData = e.target.result;
-                                const img = new Image();
-                                img.onload = () => {
-                                    if (i > 0) {
-                                        doc.addPage();
-                                    }
+                            const pageWidth = doc.internal.pageSize.getWidth();
+                            const pageHeight = doc.internal.pageSize.getHeight();
+                            const halfWidth = pageWidth / 2;
+                            
+                            // Process left image
+                            if (capturedFiles[i]) {
+                                const reader1 = new FileReader();
+                                reader1.readAsDataURL(capturedFiles[i]);
+                                await new Promise(resolve => {
+                                    reader1.onload = (e) => {
+                                        const imgData = e.target.result;
+                                        const img = new Image();
+                                        img.onload = () => {
+                                            const imgWidth = img.width;
+                                            const imgHeight = img.height;
+                                            const ratio = Math.min(halfWidth / imgWidth, pageHeight / imgHeight);
+                                            const newWidth = imgWidth * ratio;
+                                            const newHeight = imgHeight * ratio;
+                                            const x = (halfWidth - newWidth) / 2;
+                                            const y = (pageHeight - newHeight) / 2;
 
-                                    const imgWidth = img.width;
-                                    const imgHeight = img.height;
-                                    const pageWidth = doc.internal.pageSize.getWidth();
-                                    const pageHeight = doc.internal.pageSize.getHeight();
-                                    const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
-                                    const newWidth = imgWidth * ratio;
-                                    const newHeight = imgHeight * ratio;
-                                    const x = (pageWidth - newWidth) / 2;
-                                    const y = (pageHeight - newHeight) / 2;
+                                            doc.addImage(imgData, 'JPEG', x, y, newWidth, newHeight);
+                                            resolve();
+                                        };
+                                        img.src = imgData;
+                                    };
+                                });
+                            }
+                            
+                            // Process right image
+                            if (capturedFiles[i + 1]) {
+                                const reader2 = new FileReader();
+                                reader2.readAsDataURL(capturedFiles[i + 1]);
+                                await new Promise(resolve => {
+                                    reader2.onload = (e) => {
+                                        const imgData = e.target.result;
+                                        const img = new Image();
+                                        img.onload = () => {
+                                            const imgWidth = img.width;
+                                            const imgHeight = img.height;
+                                            const ratio = Math.min(halfWidth / imgWidth, pageHeight / imgHeight);
+                                            const newWidth = imgWidth * ratio;
+                                            const newHeight = imgHeight * ratio;
+                                            const x = halfWidth + (halfWidth - newWidth) / 2;
+                                            const y = (pageHeight - newHeight) / 2;
 
-                                    doc.addImage(imgData, 'JPEG', x, y, newWidth, newHeight);
+                                            doc.addImage(imgData, 'JPEG', x, y, newWidth, newHeight);
+                                            resolve();
+                                        };
+                                        img.src = imgData;
+                                    };
+                                });
+                            }
+                            
+                            // Add dividing line between pages
+                            doc.setDrawColor(200, 200, 200);
+                            doc.setLineWidth(0.5);
+                            doc.line(halfWidth, 0, halfWidth, pageHeight);
+                            
+                            // Add page numbers if enabled
+                            if (scannerAddPageNumbers.checked) {
+                                doc.setFontSize(8);
+                                doc.setTextColor(100, 100, 100);
+                                if (capturedFiles[i]) {
+                                    doc.text(`${i + 1}`, halfWidth / 2, pageHeight - 5, { align: 'center' });
+                                }
+                                if (capturedFiles[i + 1]) {
+                                    doc.text(`${i + 2}`, halfWidth + halfWidth / 2, pageHeight - 5, { align: 'center' });
+                                }
+                            }
+                        }
+                        
+                        doc.save('scanned-document-book.pdf');
+                    } else {
+                        // Regular single page layout
+                        doc = new jsPDF({
+                            orientation: selectedOrientation === 'landscape' ? 'landscape' : 'portrait',
+                            unit: 'mm',
+                            format: selectedFormat.toLowerCase(),
+                        });
 
-                                    if (scannerAddPageNumbers.checked) {
-                                        const pageNumber = i + 1;
-                                        const totalPages = capturedFiles.length;
+                        for (let i = 0; i < capturedFiles.length; i++) {
+                            const file = capturedFiles[i];
+                            const reader = new FileReader();
+                            reader.readAsDataURL(file);
+                            await new Promise(resolve => {
+                                reader.onload = (e) => {
+                                    const imgData = e.target.result;
+                                    const img = new Image();
+                                    img.onload = () => {
+                                        if (i > 0) {
+                                            doc.addPage(selectedFormat.toLowerCase(), selectedOrientation === 'landscape' ? 'landscape' : 'portrait');
+                                        }
+
+                                        const imgWidth = img.width;
+                                        const imgHeight = img.height;
                                         const pageWidth = doc.internal.pageSize.getWidth();
                                         const pageHeight = doc.internal.pageSize.getHeight();
-                                        doc.setFontSize(10);
-                                        doc.text(`${pageNumber}/${totalPages}`, pageWidth - 15, pageHeight - 10, { align: 'right' });
-                                    }
-                                    resolve();
+                                        
+                                        console.log('Scanner - Page dimensions:', pageWidth, 'x', pageHeight);
+                                        
+                                        const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+                                        const newWidth = imgWidth * ratio;
+                                        const newHeight = imgHeight * ratio;
+                                        const x = (pageWidth - newWidth) / 2;
+                                        const y = (pageHeight - newHeight) / 2;
+
+                                        doc.addImage(imgData, 'JPEG', x, y, newWidth, newHeight);
+
+                                        if (scannerAddPageNumbers.checked) {
+                                            const pageNumber = i + 1;
+                                            const totalPages = capturedFiles.length;
+                                            doc.setFontSize(10);
+                                            doc.text(`${pageNumber}/${totalPages}`, pageWidth - 15, pageHeight - 10, { align: 'right' });
+                                        }
+                                        resolve();
+                                    };
+                                    img.src = imgData;
                                 };
-                                img.src = imgData;
-                            };
-                        });
+                            });
+                        }
+                        doc.save('scanned-document.pdf');
                     }
-                    doc.save('scanned-document.pdf');
                 }
 
                 updateStatusMessage(scannerStatusMessageElement, translations[currentLang].scannerConversionSuccessMessage, 'success');
